@@ -38,6 +38,35 @@
     .pill-win { background: rgba(34,197,94,0.14); color: #86efac; border-color: rgba(34,197,94,0.25); }
     .pill-loss { background: rgba(239,68,68,0.14); color: #fca5a5; border-color: rgba(239,68,68,0.25); }
     .pill-cash { background: rgba(245,158,11,0.14); color: #fcd34d; border-color: rgba(245,158,11,0.25); }
+
+    .risk-low { color: #86efac; }
+    .risk-medium { color: #fcd34d; }
+    .risk-high { color: #fda4af; }
+
+    .reco-hold { color: #86efac; }
+    .reco-consider { color: #fcd34d; }
+    .reco-cash { color: #fda4af; }
+
+    .status-running {
+      background: rgba(56,189,248,0.14);
+      color: #7dd3fc;
+      border-color: rgba(56,189,248,0.25);
+    }
+    .status-cashed {
+      background: rgba(245,158,11,0.14);
+      color: #fcd34d;
+      border-color: rgba(245,158,11,0.25);
+    }
+    .status-busted {
+      background: rgba(239,68,68,0.14);
+      color: #fca5a5;
+      border-color: rgba(239,68,68,0.25);
+    }
+    .status-complete {
+      background: rgba(34,197,94,0.14);
+      color: #86efac;
+      border-color: rgba(34,197,94,0.25);
+    }
   </style>
 </head>
 <body class="bg-app min-h-screen text-slate-100">
@@ -117,6 +146,51 @@
           </div>
           <div class="w-full h-3 bg-white/10 rounded-full overflow-hidden">
             <div id="progressBar" class="h-full rounded-full bg-gradient-to-r from-sky-400 to-violet-400" style="width:0%"></div>
+          </div>
+        </div>
+
+        <!-- Intelligence Layer -->
+        <div class="grid md:grid-cols-2 gap-4">
+          <div class="glass-soft rounded-[26px] p-5">
+            <div class="text-sm text-slate-400">Next Leg Intelligence</div>
+            <div class="mt-3 space-y-2">
+              <div class="flex justify-between text-sm gap-4">
+                <span>Projected Bankroll</span>
+                <span id="projBankroll" class="font-semibold text-right">$0.00</span>
+              </div>
+              <div class="flex justify-between text-sm gap-4">
+                <span>Implied Win %</span>
+                <span id="impliedProb" class="font-semibold text-right">0%</span>
+              </div>
+              <div class="flex justify-between text-sm gap-4">
+                <span>Risk Level</span>
+                <span id="riskLevel" class="font-semibold text-right">—</span>
+              </div>
+              <div id="nextLegNote" class="text-xs text-slate-400 pt-2 border-t border-white/10">
+                Enter a stake, odds, and bet name to preview the next leg.
+              </div>
+            </div>
+          </div>
+
+          <div class="glass-soft rounded-[26px] p-5">
+            <div class="text-sm text-slate-400">Cash Out Brain</div>
+            <div class="mt-3 space-y-2">
+              <div class="flex justify-between text-sm gap-4">
+                <span>Current Profit</span>
+                <span id="cashoutProfit" class="font-semibold text-right">$0.00</span>
+              </div>
+              <div class="flex justify-between text-sm gap-4">
+                <span>Recommendation</span>
+                <span id="cashoutReco" class="font-semibold text-right">—</span>
+              </div>
+              <div class="flex justify-between text-sm gap-4">
+                <span>Run Status</span>
+                <span id="runStatusText" class="font-semibold text-right">Waiting</span>
+              </div>
+              <div id="cashoutNote" class="text-xs text-slate-400 pt-2 border-t border-white/10">
+                Build some profit or lock a play to get a smarter recommendation.
+              </div>
+            </div>
           </div>
         </div>
 
@@ -206,9 +280,9 @@
         </div>
 
         <div class="rounded-2xl bg-white/5 border border-white/10 p-4 space-y-2">
-          <div class="flex items-center justify-between text-sm">
+          <div class="flex items-center justify-between text-sm gap-4">
             <span class="text-slate-400">Run Progress</span>
-            <span id="exportProgressLabel" class="font-medium text-white">0%</span>
+            <span id="exportProgressLabel" class="font-medium text-white text-right">0%</span>
           </div>
           <div class="w-full h-3 bg-white/10 rounded-full overflow-hidden">
             <div id="exportProgressBar" class="h-full rounded-full bg-gradient-to-r from-sky-400 to-violet-400" style="width:0%"></div>
@@ -221,9 +295,24 @@
             <span id="exportPL" class="text-2xl md:text-3xl font-bold text-emerald-300 text-right break-words">+$0.00</span>
           </div>
           <div class="border-t border-white/10"></div>
+
+          <div class="flex items-center justify-between gap-4">
+            <span class="text-sm text-slate-400">Run Status</span>
+            <span id="exportRunStatus" class="px-3 py-1 rounded-full text-sm border status-running shrink-0">RUNNING</span>
+          </div>
+
+          <div class="border-t border-white/10"></div>
+
           <div class="space-y-2">
             <div class="text-sm text-slate-400">Next Play</div>
             <div id="exportNextPlay" class="font-semibold text-base break-words text-white text-center">Pending</div>
+          </div>
+
+          <div class="border-t border-white/10"></div>
+
+          <div class="space-y-2">
+            <div class="text-sm text-slate-400">Decision Edge</div>
+            <div id="exportDecisionEdge" class="font-semibold text-base break-words text-white text-center">Waiting for next leg</div>
           </div>
         </div>
 
@@ -251,7 +340,7 @@
       pendingBet: null,
       shownGoal: false,
       shownBusted: false,
-      storageKey: 'ladder-tracker-strict-flow-v4'
+      storageKey: 'ladder-tracker-strict-flow-v5'
     };
 
     const els = {
@@ -292,6 +381,8 @@
       exportPL: document.getElementById('exportPL'),
       exportNextPlay: document.getElementById('exportNextPlay'),
       exportLog: document.getElementById('exportLog'),
+      exportRunStatus: document.getElementById('exportRunStatus'),
+      exportDecisionEdge: document.getElementById('exportDecisionEdge'),
       shareCard: document.getElementById('shareCard'),
       modalOverlay: document.getElementById('modalOverlay'),
       modalTitle: document.getElementById('modalTitle'),
@@ -299,7 +390,15 @@
       modalActions: document.getElementById('modalActions'),
       stepBadge: document.getElementById('stepBadge'),
       stepHint: document.getElementById('stepHint'),
-      setupWarning: document.getElementById('setupWarning')
+      setupWarning: document.getElementById('setupWarning'),
+      projBankroll: document.getElementById('projBankroll'),
+      impliedProb: document.getElementById('impliedProb'),
+      riskLevel: document.getElementById('riskLevel'),
+      nextLegNote: document.getElementById('nextLegNote'),
+      cashoutProfit: document.getElementById('cashoutProfit'),
+      cashoutReco: document.getElementById('cashoutReco'),
+      cashoutNote: document.getElementById('cashoutNote'),
+      runStatusText: document.getElementById('runStatusText')
     };
 
     function round2(n) {
@@ -334,10 +433,22 @@
       return n > 0 ? 1 + (n / 100) : 1 + (100 / Math.abs(n));
     }
 
+    function americanToImpliedProbability(odds) {
+      const n = Number(odds);
+      if (!Number.isFinite(n) || n === 0) return null;
+      return n > 0
+        ? 100 / (n + 100)
+        : Math.abs(n) / (Math.abs(n) + 100);
+    }
+
     function americanProfit(stake, odds) {
       const dec = americanToDecimal(odds);
       if (!dec || !Number.isFinite(stake)) return 0;
       return round2(stake * (dec - 1));
+    }
+
+    function formatPercentFromDecimal(decimalValue) {
+      return `${(Number(decimalValue || 0) * 100).toFixed(1)}%`;
     }
 
     function getStartingBankroll() {
@@ -380,6 +491,227 @@
 
     function hasValidSetup() {
       return getStartingBankroll() > 0 && getTargetBankroll() > getStartingBankroll();
+    }
+
+    function getRiskProfile(odds) {
+      const implied = americanToImpliedProbability(odds);
+      if (implied == null) {
+        return { label: '—', className: '' };
+      }
+      if (implied >= 0.62) {
+        return { label: 'Low', className: 'risk-low' };
+      }
+      if (implied >= 0.48) {
+        return { label: 'Medium', className: 'risk-medium' };
+      }
+      return { label: 'High', className: 'risk-high' };
+    }
+
+    function getRunStatus() {
+      const current = getCurrentBankroll();
+      const goal = getTargetBankroll();
+
+      if (state.bets.length > 0 && current <= 0) {
+        return { label: 'BUSTED', className: 'status-busted', plain: 'Busted' };
+      }
+
+      if (goal > 0 && current >= goal) {
+        return { label: 'GOAL HIT', className: 'status-complete', plain: 'Goal hit' };
+      }
+
+      const lastBet = state.bets[state.bets.length - 1];
+      if (lastBet && lastBet.result === 'cashout') {
+        return { label: 'CASHED OUT', className: 'status-cashed', plain: 'Cashed out' };
+      }
+
+      if (state.pendingBet) {
+        return { label: 'LIVE LEG', className: 'status-running', plain: 'Live leg locked' };
+      }
+
+      return { label: 'RUNNING', className: 'status-running', plain: 'Running' };
+    }
+
+    function getNextLegIntelligence() {
+      const currentBankroll = getCurrentBankroll();
+      const start = getStartingBankroll();
+      const goal = getTargetBankroll();
+      const stake = round2(Number(els.betStake.value));
+      const odds = parseAmericanOdds(els.betOdds.value);
+      const note = els.betNote.value.trim();
+      const legCount = state.bets.length;
+
+      if (!hasValidSetup()) {
+        return {
+          projectedBankroll: currentBankroll,
+          impliedProbability: 0,
+          risk: { label: '—', className: '' },
+          note: 'Set a starting bankroll and goal to begin using the ladder intelligence layer.'
+        };
+      }
+
+      if (state.pendingBet) {
+        const implied = americanToImpliedProbability(state.pendingBet.odds) || 0;
+        const risk = getRiskProfile(state.pendingBet.odds);
+        return {
+          projectedBankroll: round2(currentBankroll + state.pendingBet.profit),
+          impliedProbability: implied,
+          risk,
+          note: 'This leg is locked. Grade the result before planning the next one.'
+        };
+      }
+
+      if (!Number.isFinite(stake) || stake <= 0 || !Number.isFinite(odds) || !note) {
+        return {
+          projectedBankroll: currentBankroll,
+          impliedProbability: 0,
+          risk: { label: '—', className: '' },
+          note: 'Enter a stake, odds, and bet name to preview the next leg.'
+        };
+      }
+
+      if (stake > currentBankroll) {
+        return {
+          projectedBankroll: currentBankroll,
+          impliedProbability: americanToImpliedProbability(odds) || 0,
+          risk: getRiskProfile(odds),
+          note: 'This stake is larger than your current bankroll.'
+        };
+      }
+
+      const implied = americanToImpliedProbability(odds) || 0;
+      const risk = getRiskProfile(odds);
+      const projectedBankroll = round2(currentBankroll + americanProfit(stake, odds));
+      const progressToGoal = goal > 0 ? currentBankroll / goal : 0;
+      const currentProfit = round2(currentBankroll - start);
+
+      let guidance = '';
+
+      if (risk.label === 'High') {
+        guidance = 'Aggressive ladder leg. Good upside, but a miss resets momentum quickly.';
+      } else if (risk.label === 'Medium') {
+        guidance = 'Balanced ladder leg. Reasonable growth with meaningful risk.';
+      } else {
+        guidance = 'Conservative ladder leg. Slower growth, better survival odds.';
+      }
+
+      if (currentProfit > 0 && legCount >= 2) {
+        guidance += ' You have real profit built, so taking a swing should be intentional.';
+      }
+
+      if (progressToGoal >= 0.5) {
+        guidance += ' You are over halfway to goal.';
+      }
+
+      return {
+        projectedBankroll,
+        impliedProbability: implied,
+        risk,
+        note: guidance
+      };
+    }
+
+    function getCashoutBrain() {
+      const start = getStartingBankroll();
+      const current = getCurrentBankroll();
+      const goal = getTargetBankroll();
+      const profit = round2(current - start);
+      const legs = state.bets.length;
+      const previewOdds = state.pendingBet ? state.pendingBet.odds : parseAmericanOdds(els.betOdds.value);
+      const implied = previewOdds != null ? americanToImpliedProbability(previewOdds) : null;
+
+      if (!hasValidSetup()) {
+        return {
+          profit,
+          recommendation: '—',
+          recommendationClass: '',
+          note: 'Complete the bankroll setup first.'
+        };
+      }
+
+      if (current <= 0 && state.bets.length > 0) {
+        return {
+          profit,
+          recommendation: 'Run Over',
+          recommendationClass: 'reco-cash',
+          note: 'This ladder is busted. Restart to begin a new run.'
+        };
+      }
+
+      if (goal > 0 && current >= goal) {
+        return {
+          profit,
+          recommendation: 'Cash It',
+          recommendationClass: 'reco-cash',
+          note: 'Goal already reached. Locking the run makes the most sense.'
+        };
+      }
+
+      if (!state.pendingBet && profit <= 0) {
+        return {
+          profit,
+          recommendation: 'Build First',
+          recommendationClass: '',
+          note: 'No meaningful profit is built yet. Focus on surviving the next leg.'
+        };
+      }
+
+      if (state.pendingBet) {
+        if (profit >= start && legs >= 3) {
+          return {
+            profit,
+            recommendation: 'Strong Cash-Out Spot',
+            recommendationClass: 'reco-cash',
+            note: 'You have doubled or more versus the starting roll and already built multiple legs. This is a strong profit-lock point.'
+          };
+        }
+
+        if (profit > 0 && implied != null && implied < 0.5) {
+          return {
+            profit,
+            recommendation: 'Consider Cashing',
+            recommendationClass: 'reco-consider',
+            note: 'You have profit on the table and the locked leg is relatively aggressive.'
+          };
+        }
+
+        return {
+          profit,
+          recommendation: 'Keep Rolling',
+          recommendationClass: 'reco-hold',
+          note: 'The run is still alive and the risk profile does not strongly favor cashing out yet.'
+        };
+      }
+
+      if (profit > 0 && legs >= 3) {
+        return {
+          profit,
+          recommendation: 'Consider Locking Profit',
+          recommendationClass: 'reco-consider',
+          note: 'You have momentum and banked profit. The next leg should be deliberate, not automatic.'
+        };
+      }
+
+      return {
+        profit,
+        recommendation: 'Keep Building',
+        recommendationClass: 'reco-hold',
+        note: 'Continue building the ladder, but stay selective with the next odds.'
+      };
+    }
+
+    function getDecisionEdgeText() {
+      const nextIntel = getNextLegIntelligence();
+      const cashBrain = getCashoutBrain();
+
+      if (state.pendingBet) {
+        return `${cashBrain.recommendation} · ${nextIntel.risk.label} risk`;
+      }
+
+      if (nextIntel.risk.label === '—') {
+        return cashBrain.note.length > 48 ? 'Waiting for next leg' : cashBrain.note;
+      }
+
+      return `${nextIntel.risk.label} risk · ${cashBrain.recommendation}`;
     }
 
     function saveState() {
@@ -750,6 +1082,32 @@
       }
     }
 
+    function renderInsights() {
+      const nextIntel = getNextLegIntelligence();
+      const cashBrain = getCashoutBrain();
+      const runStatus = getRunStatus();
+
+      els.projBankroll.textContent = formatMoney(nextIntel.projectedBankroll);
+      els.impliedProb.textContent = formatPercentFromDecimal(nextIntel.impliedProbability);
+      els.riskLevel.textContent = nextIntel.risk.label;
+      els.riskLevel.className = `font-semibold text-right ${nextIntel.risk.className || ''}`;
+      els.nextLegNote.textContent = nextIntel.note;
+
+      els.cashoutProfit.textContent = formatMoney(cashBrain.profit);
+      els.cashoutReco.textContent = cashBrain.recommendation;
+      els.cashoutReco.className = `font-semibold text-right ${cashBrain.recommendationClass || ''}`;
+      els.cashoutNote.textContent = cashBrain.note;
+
+      els.runStatusText.textContent = runStatus.plain;
+    }
+
+    function renderShareCardEnhancements() {
+      const runStatus = getRunStatus();
+      els.exportRunStatus.textContent = runStatus.label;
+      els.exportRunStatus.className = `px-3 py-1 rounded-full text-sm border shrink-0 ${runStatus.className}`;
+      els.exportDecisionEdge.textContent = getDecisionEdgeText();
+    }
+
     function render() {
       const start = getStartingBankroll();
       const current = getCurrentBankroll();
@@ -783,6 +1141,8 @@
       renderHistory();
       renderExportLog();
       renderStepUI();
+      renderInsights();
+      renderShareCardEnhancements();
     }
 
     async function downloadShareCard() {
@@ -882,12 +1242,9 @@
         v = (first === '+' || first === '-') ? first + v.slice(1).replace(/[+-]/g, '') : v.replace(/[+-]/g, '');
       }
 
-      if (/^[0-9]/.test(v)) {
-        v = v.replace(/[+-]/g, '');
-      }
-
       e.target.value = v;
       saveState();
+      render();
     });
 
     els.lockBtn.addEventListener('click', lockNextPlay);
