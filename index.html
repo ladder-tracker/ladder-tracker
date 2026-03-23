@@ -175,6 +175,12 @@
       font-size:14px;
     }
 
+    .tension{
+      color:#ffd86b;
+      font-size:13px;
+      margin-top:8px;
+    }
+
     .row{
       display:flex;
       gap:10px;
@@ -565,6 +571,18 @@
         <button class="primary" onclick="exportProgressCard()">Export progress card</button>
       </div>
     </div>
+
+    <div id="saveView" class="hidden">
+      <div class="card">
+        <div class="title">Save / Load</div>
+        <div class="muted">Export your current run as JSON or load a saved run.</div>
+        <button class="primary" onclick="exportRunJson()">Export JSON</button>
+        <button class="ghost" onclick="triggerLoadJson()">Load JSON</button>
+        <input id="loadJsonInput" type="file" accept="application/json" class="hidden">
+      </div>
+    </div>
+
+    <div id="closedScreen" class="card hidden"></div>
   </div>
 
   <div id="toast" class="toast"></div>
@@ -588,6 +606,7 @@
       <button onclick="switchView('hub')">Hub</button>
       <button onclick="switchView('log')">Log</button>
       <button onclick="switchView('share')">Share</button>
+      <button onclick="switchView('save')">Save/Load</button>
     </div>
   </div>
 
@@ -711,14 +730,21 @@
       document.getElementById("hubView").classList.toggle("hidden", view !== 'hub');
       document.getElementById("logView").classList.toggle("hidden", view !== 'log');
       document.getElementById("shareView").classList.toggle("hidden", view !== 'share');
+      document.getElementById("saveView").classList.toggle("hidden", view !== 'save');
+      document.getElementById("closedScreen").classList.add("hidden");
 
       if (view === 'log' && run) renderLog();
+    }
+
+    function saveCurrentRun(){
+      localStorage.setItem("current_run", JSON.stringify(run || null));
     }
 
     function renderAll(){
       updateHeader();
       renderHub();
       renderLog();
+      saveCurrentRun();
     }
 
     function renderHub(){
@@ -744,11 +770,6 @@
         return;
       }
 
-      if (hasHitGoal()) {
-        closeRun("goal");
-        return;
-      }
-
       document.getElementById("bankroll").textContent = `$${round2(run.bankroll).toFixed(2)}`;
       document.getElementById("meta").textContent = `Start $${run.start.toFixed(2)} • Goal $${run.target.toFixed(2)}`;
 
@@ -770,7 +791,7 @@
             <div class="action-kicker">Your play</div>
             <div class="action-main">${run.pending.bet}</div>
             <div class="action-sub">${run.pending.odds} • $${round2(run.pending.stake).toFixed(2)}</div>
-            <div class="row section-gap">
+            <div class="row">
               <button onclick="markWin()">Win</button>
               <button onclick="markLoss()">Loss</button>
             </div>
@@ -853,14 +874,6 @@
       resetApp();
     }
 
-    function checkGoalCompletion() {
-      if (hasHitGoal()) {
-        closeRun("goal");
-        return true;
-      }
-      return false;
-    }
-
     function markWin(){
       if (!run || !run.pending) return;
 
@@ -881,7 +894,11 @@
       run.bankroll = totalReturn;
       run.state = "decision";
 
-      if (checkGoalCompletion()) return;
+      if (hasHitGoal()) {
+        closeRun("goal");
+        return;
+      }
+
       renderAll();
     }
 
@@ -905,7 +922,6 @@
       run.nextStake = nextStake;
       run.state = "addBet";
 
-      if (checkGoalCompletion()) return;
       renderAll();
     }
 
@@ -916,7 +932,6 @@
 
     function placeNextBet(){
       if (!run) return;
-      if (checkGoalCompletion()) return;
 
       const betEl = document.getElementById("nextBetInput");
       const oddsEl = document.getElementById("nextOddsInput");
@@ -970,12 +985,11 @@
         subtitle = `You finished at $${total.toFixed(2)}.`;
       }
 
-      runs.push(JSON.parse(JSON.stringify(run)));
-
       switchView('hub');
       document.getElementById("hubView").classList.add("hidden");
       document.getElementById("logView").classList.add("hidden");
       document.getElementById("shareView").classList.add("hidden");
+      document.getElementById("saveView").classList.add("hidden");
       document.getElementById("closedScreen").classList.remove("hidden");
 
       document.getElementById("closedScreen").innerHTML = `
@@ -1034,11 +1048,8 @@
 
       const bubbles = [];
       for (let i = 1; i <= stepTotal; i++) {
-        if (i <= wins) {
-          bubbles.push(`<div class="step-bubble win">W</div>`);
-        } else {
-          bubbles.push(`<div class="step-bubble">${i}</div>`);
-        }
+        if (i <= wins) bubbles.push(`<div class="step-bubble win">W</div>`);
+        else bubbles.push(`<div class="step-bubble">${i}</div>`);
       }
 
       let headline = "Ladder Progress";
@@ -1126,9 +1137,66 @@
       });
     }
 
+    function exportRunJson(){
+      if (!run) {
+        alert("No active run to export.");
+        return;
+      }
+
+      const blob = new Blob([JSON.stringify(run, null, 2)], {
+        type: "application/json"
+      });
+
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "ladder-run.json";
+      a.click();
+      URL.revokeObjectURL(a.href);
+
+      toast("JSON exported");
+    }
+
+    function triggerLoadJson(){
+      const input = document.getElementById("loadJsonInput");
+      input.value = "";
+      input.click();
+    }
+
+    document.getElementById("loadJsonInput").addEventListener("change", (e) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = () => {
+        try {
+          const parsed = JSON.parse(reader.result);
+
+          if (!parsed || typeof parsed !== "object" || typeof parsed.start !== "number") {
+            throw new Error("Invalid file");
+          }
+
+          run = parsed;
+
+          document.getElementById("setupCard").classList.add("hidden");
+          document.getElementById("summaryCard").classList.remove("hidden");
+          document.getElementById("miniTrailCard").classList.remove("hidden");
+          document.getElementById("closedScreen").classList.add("hidden");
+
+          switchView('hub');
+          renderAll();
+          toast("Run loaded");
+        } catch (err) {
+          alert("Load failed. Invalid JSON file.");
+        }
+      };
+      reader.readAsText(file);
+    });
+
     function resetApp(){
       run = null;
       multiplier = null;
+
+      localStorage.removeItem("current_run");
 
       document.getElementById("closedScreen").classList.add("hidden");
       document.getElementById("setupScreen").classList.remove("hidden");
@@ -1149,6 +1217,22 @@
 
       switchView('hub');
     }
+
+    window.addEventListener("DOMContentLoaded", () => {
+      const saved = localStorage.getItem("current_run");
+      if (!saved) return;
+
+      try {
+        const parsed = JSON.parse(saved);
+        if (parsed && typeof parsed === "object" && typeof parsed.start === "number") {
+          run = parsed;
+          document.getElementById("setupCard").classList.add("hidden");
+          document.getElementById("summaryCard").classList.remove("hidden");
+          document.getElementById("miniTrailCard").classList.remove("hidden");
+          renderAll();
+        }
+      } catch {}
+    });
   </script>
 </body>
 </html>
