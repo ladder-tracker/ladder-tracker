@@ -38,35 +38,8 @@
     .pill-win { background: rgba(34,197,94,0.14); color: #86efac; border-color: rgba(34,197,94,0.25); }
     .pill-loss { background: rgba(239,68,68,0.14); color: #fca5a5; border-color: rgba(239,68,68,0.25); }
     .pill-cash { background: rgba(245,158,11,0.14); color: #fcd34d; border-color: rgba(245,158,11,0.25); }
-
-    .risk-low { color: #86efac; }
-    .risk-medium { color: #fcd34d; }
-    .risk-high { color: #fda4af; }
-
-    .reco-hold { color: #86efac; }
-    .reco-consider { color: #fcd34d; }
-    .reco-cash { color: #fda4af; }
-
-    .status-running {
-      background: rgba(56,189,248,0.14);
-      color: #7dd3fc;
-      border-color: rgba(56,189,248,0.25);
-    }
-    .status-cashed {
-      background: rgba(245,158,11,0.14);
-      color: #fcd34d;
-      border-color: rgba(245,158,11,0.25);
-    }
-    .status-busted {
-      background: rgba(239,68,68,0.14);
-      color: #fca5a5;
-      border-color: rgba(239,68,68,0.25);
-    }
-    .status-complete {
-      background: rgba(34,197,94,0.14);
-      color: #86efac;
-      border-color: rgba(34,197,94,0.25);
-    }
+    .odds-positive { color: #86efac; }
+    .odds-negative { color: #fca5a5; }
   </style>
 </head>
 <body class="bg-app min-h-screen text-slate-100">
@@ -77,11 +50,9 @@
           <div>
             <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-sky-400/20 bg-sky-400/10 text-sky-200 text-xs uppercase tracking-[0.25em]">Ladder Mode</div>
             <h1 class="text-3xl md:text-4xl font-bold mt-3 text-glow">Ladder Tracker</h1>
-            <p class="text-sm md:text-base text-slate-300 mt-2 max-w-2xl">A strict run flow. Lock a play, grade the result, then advance to the next leg. Built for tracking momentum, not just calculating odds.</p>
+            <p class="text-sm md:text-base text-slate-300 mt-2 max-w-2xl">A strict run flow. Lock a play, grade the result, then advance to the next leg.</p>
           </div>
           <div class="flex flex-wrap gap-2">
-            <button id="downloadPngBtn" class="px-4 h-11 rounded-2xl bg-sky-500 hover:bg-sky-400 text-slate-950 font-semibold">Download PNG</button>
-
             <div class="flex items-center gap-1">
               <button id="exportRunBtn" class="px-4 h-11 rounded-2xl border border-white/15 bg-white/5 hover:bg-white/10 font-medium">Export Run</button>
               <button id="exportHelp" class="h-11 w-11 rounded-2xl border border-white/15 bg-white/5 hover:bg-white/10 font-semibold">?</button>
@@ -149,52 +120,7 @@
           </div>
         </div>
 
-        <!-- Intelligence Layer -->
-        <div class="grid md:grid-cols-2 gap-4">
-          <div class="glass-soft rounded-[26px] p-5">
-            <div class="text-sm text-slate-400">Next Leg Intelligence</div>
-            <div class="mt-3 space-y-2">
-              <div class="flex justify-between text-sm gap-4">
-                <span>Projected Bankroll</span>
-                <span id="projBankroll" class="font-semibold text-right">$0.00</span>
-              </div>
-              <div class="flex justify-between text-sm gap-4">
-                <span>Implied Win %</span>
-                <span id="impliedProb" class="font-semibold text-right">0%</span>
-              </div>
-              <div class="flex justify-between text-sm gap-4">
-                <span>Risk Level</span>
-                <span id="riskLevel" class="font-semibold text-right">—</span>
-              </div>
-              <div id="nextLegNote" class="text-xs text-slate-400 pt-2 border-t border-white/10">
-                Enter a stake, odds, and bet name to preview the next leg.
-              </div>
-            </div>
-          </div>
-
-          <div class="glass-soft rounded-[26px] p-5">
-            <div class="text-sm text-slate-400">Cash Out Brain</div>
-            <div class="mt-3 space-y-2">
-              <div class="flex justify-between text-sm gap-4">
-                <span>Current Profit</span>
-                <span id="cashoutProfit" class="font-semibold text-right">$0.00</span>
-              </div>
-              <div class="flex justify-between text-sm gap-4">
-                <span>Recommendation</span>
-                <span id="cashoutReco" class="font-semibold text-right">—</span>
-              </div>
-              <div class="flex justify-between text-sm gap-4">
-                <span>Run Status</span>
-                <span id="runStatusText" class="font-semibold text-right">Waiting</span>
-              </div>
-              <div id="cashoutNote" class="text-xs text-slate-400 pt-2 border-t border-white/10">
-                Build some profit or lock a play to get a smarter recommendation.
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="grid xl:grid-cols-[0.95fr_1.05fr] gap-6">
+        <div class="grid xl:grid-cols-[1fr_1fr] gap-6">
           <div class="glass-soft rounded-[28px] p-5">
             <div class="flex items-center justify-between gap-3 mb-4">
               <h2 class="text-xl font-bold">Strict Ladder Flow</h2>
@@ -211,11 +137,19 @@
               <div>
                 <label class="block text-sm font-medium mb-2 text-slate-300">American odds</label>
                 <input id="betOdds" type="text" autocapitalize="off" autocomplete="off" autocorrect="off" spellcheck="false" placeholder="-235 or +150" class="w-full h-12 rounded-2xl border border-white/10 bg-slate-950/50 px-4 text-white placeholder:text-slate-500" />
+                <div id="oddsPreview" class="text-xs mt-2 text-slate-400">Enter odds like -140, +150, or 150.</div>
               </div>
               <div>
                 <label class="block text-sm font-medium mb-2 text-slate-300">Bet Name or Bet ID</label>
                 <input id="betNote" placeholder="Bears ML, Brady over 300 yards, Bet ID 12345" class="w-full h-12 rounded-2xl border border-white/10 bg-slate-950/50 px-4 text-white placeholder:text-slate-500" />
               </div>
+            </div>
+
+            <div id="profitPreviewCard" class="mt-4 hidden rounded-2xl border border-white/10 bg-slate-950/35 p-4">
+              <div class="text-sm text-slate-400">Potential Return</div>
+              <div id="potentialReturn" class="text-xl font-bold text-white mt-1">$0.00</div>
+              <div class="text-sm text-slate-400 mt-2">Potential Profit</div>
+              <div id="potentialProfit" class="text-lg font-semibold text-emerald-300 mt-1">$0.00</div>
             </div>
 
             <div class="mt-5 space-y-4">
@@ -241,10 +175,10 @@
 
           <div class="glass-soft rounded-[28px] p-5">
             <div class="flex items-center justify-between gap-3 mb-4">
-              <h2 class="text-xl font-bold">Run History</h2>
+              <h2 class="text-xl font-bold">Run Log</h2>
               <div class="text-xs text-slate-400" id="historyCount">0 plays</div>
             </div>
-            <div id="historyList" class="space-y-3">
+            <div id="historyList" class="space-y-3 max-h-[560px] overflow-auto pr-1">
               <div class="rounded-2xl border border-dashed border-white/10 p-6 text-slate-500 text-sm">No plays graded yet.</div>
             </div>
           </div>
@@ -252,74 +186,66 @@
       </div>
     </div>
 
-    <div id="shareCard" class="w-full max-w-md mx-auto rounded-[32px] overflow-hidden border border-white/10 share-gradient shadow-2xl self-start xl:sticky xl:top-6">
-      <div class="px-6 py-5 border-b border-white/10">
-        <div class="flex items-center justify-between gap-3">
-          <div class="min-w-0">
-            <div class="text-xs uppercase tracking-[0.25em] text-slate-400">Ladder Tracker</div>
-            <div id="exportRunName" class="text-2xl font-bold mt-1 text-white text-center break-words">Road to 1K</div>
-          </div>
-          <div class="rounded-2xl bg-white/10 px-3 py-2 text-lg shrink-0">🚀</div>
-        </div>
-      </div>
+    <div class="space-y-3 self-start xl:sticky xl:top-6">
+      <button id="downloadPngBtn" class="w-full max-w-md mx-auto h-12 rounded-2xl bg-sky-500 hover:bg-sky-400 text-slate-950 font-semibold block">Download Overview PNG</button>
 
-      <div class="p-6 space-y-5">
-        <div class="grid grid-cols-3 gap-3 text-center items-center">
-          <div class="rounded-2xl border border-white/10 bg-white/5 p-3 flex flex-col items-center justify-center">
-            <div class="text-xs text-slate-400">Start</div>
-            <div id="exportStart" class="font-semibold text-lg text-white break-words">$10.00</div>
-          </div>
-          <div class="rounded-2xl border border-white/10 bg-white/5 p-3 flex flex-col items-center justify-center">
-            <div class="text-xs text-slate-400">Now</div>
-            <div id="exportNow" class="font-semibold text-lg md:text-xl text-white break-words">$10.00</div>
-          </div>
-          <div class="rounded-2xl border border-white/10 bg-white/5 p-3 flex flex-col items-center justify-center">
-            <div class="text-xs text-slate-400">Goal</div>
-            <div id="exportGoal" class="font-semibold text-lg text-white break-words">$1,000.00</div>
+      <div id="shareCard" class="w-full max-w-md mx-auto rounded-[32px] overflow-hidden border border-white/10 share-gradient shadow-2xl">
+        <div class="px-6 py-5 border-b border-white/10">
+          <div class="flex items-center justify-between gap-3">
+            <div class="min-w-0">
+              <div class="text-xs uppercase tracking-[0.25em] text-slate-400">Ladder Tracker</div>
+              <div id="exportRunName" class="text-2xl font-bold mt-1 text-white text-center break-words">Road to 1K</div>
+            </div>
+            <div class="rounded-2xl bg-white/10 px-3 py-2 text-lg shrink-0">🚀</div>
           </div>
         </div>
 
-        <div class="rounded-2xl bg-white/5 border border-white/10 p-4 space-y-2">
-          <div class="flex items-center justify-between text-sm gap-4">
-            <span class="text-slate-400">Run Progress</span>
-            <span id="exportProgressLabel" class="font-medium text-white text-right">0%</span>
-          </div>
-          <div class="w-full h-3 bg-white/10 rounded-full overflow-hidden">
-            <div id="exportProgressBar" class="h-full rounded-full bg-gradient-to-r from-sky-400 to-violet-400" style="width:0%"></div>
-          </div>
-        </div>
-
-        <div class="rounded-2xl border border-white/10 bg-white/5 p-4 space-y-3">
-          <div class="flex items-center justify-between gap-4">
-            <span class="text-sm text-slate-400">Profit / Loss</span>
-            <span id="exportPL" class="text-2xl md:text-3xl font-bold text-emerald-300 text-right break-words">+$0.00</span>
-          </div>
-          <div class="border-t border-white/10"></div>
-
-          <div class="flex items-center justify-between gap-4">
-            <span class="text-sm text-slate-400">Run Status</span>
-            <span id="exportRunStatus" class="px-3 py-1 rounded-full text-sm border status-running shrink-0">RUNNING</span>
+        <div class="p-6 space-y-5">
+          <div class="grid grid-cols-3 gap-3 text-center items-center">
+            <div class="rounded-2xl border border-white/10 bg-white/5 p-3 flex flex-col items-center justify-center">
+              <div class="text-xs text-slate-400">Start</div>
+              <div id="exportStart" class="font-semibold text-lg text-white break-words">$10.00</div>
+            </div>
+            <div class="rounded-2xl border border-white/10 bg-white/5 p-3 flex flex-col items-center justify-center">
+              <div class="text-xs text-slate-400">Now</div>
+              <div id="exportNow" class="font-semibold text-lg md:text-xl text-white break-words">$10.00</div>
+            </div>
+            <div class="rounded-2xl border border-white/10 bg-white/5 p-3 flex flex-col items-center justify-center">
+              <div class="text-xs text-slate-400">Goal</div>
+              <div id="exportGoal" class="font-semibold text-lg text-white break-words">$1,000.00</div>
+            </div>
           </div>
 
-          <div class="border-t border-white/10"></div>
-
-          <div class="space-y-2">
-            <div class="text-sm text-slate-400">Next Play</div>
-            <div id="exportNextPlay" class="font-semibold text-base break-words text-white text-center">Pending</div>
+          <div class="rounded-2xl bg-white/5 border border-white/10 p-4 space-y-2">
+            <div class="flex items-center justify-between text-sm">
+              <span class="text-slate-400">Run Progress</span>
+              <span id="exportProgressLabel" class="font-medium text-white">0%</span>
+            </div>
+            <div class="w-full h-3 bg-white/10 rounded-full overflow-hidden">
+              <div id="exportProgressBar" class="h-full rounded-full bg-gradient-to-r from-sky-400 to-violet-400" style="width:0%"></div>
+            </div>
           </div>
 
-          <div class="border-t border-white/10"></div>
-
-          <div class="space-y-2">
-            <div class="text-sm text-slate-400">Decision Edge</div>
-            <div id="exportDecisionEdge" class="font-semibold text-base break-words text-white text-center">Waiting for next leg</div>
+          <div class="rounded-2xl border border-white/10 bg-white/5 p-4 space-y-3">
+            <div class="flex items-center justify-between gap-4">
+              <span class="text-sm text-slate-400">Profit / Loss</span>
+              <span id="exportPL" class="text-2xl md:text-3xl font-bold text-emerald-300 text-right break-words">+$0.00</span>
+            </div>
+            <div class="border-t border-white/10"></div>
+            <div class="space-y-2">
+              <div class="text-sm text-slate-400">Next Play</div>
+              <div id="exportNextPlay" class="font-semibold text-base break-words text-white text-center">Pending</div>
+            </div>
           </div>
-        </div>
 
-        <div class="rounded-2xl border border-white/10 bg-white/5 p-4">
-          <div class="text-sm text-slate-400 mb-3">Run Log</div>
-          <div id="exportLog" class="space-y-2 max-h-96 overflow-auto pr-1">
-            <div class="text-sm text-slate-500">No bets logged yet.</div>
+          <div class="rounded-2xl border border-white/10 bg-white/5 p-4">
+            <div class="flex items-center justify-between gap-3 mb-3">
+              <div class="text-sm text-slate-400">Overview Log</div>
+              <div class="text-xs text-slate-500">Share-ready</div>
+            </div>
+            <div id="exportLog" class="space-y-2 max-h-80 overflow-auto pr-1">
+              <div class="text-sm text-slate-500">No bets logged yet.</div>
+            </div>
           </div>
         </div>
       </div>
@@ -340,7 +266,7 @@
       pendingBet: null,
       shownGoal: false,
       shownBusted: false,
-      storageKey: 'ladder-tracker-strict-flow-v5'
+      storageKey: 'ladder-tracker-strict-flow-v6'
     };
 
     const els = {
@@ -350,6 +276,10 @@
       betStake: document.getElementById('betStake'),
       betOdds: document.getElementById('betOdds'),
       betNote: document.getElementById('betNote'),
+      oddsPreview: document.getElementById('oddsPreview'),
+      profitPreviewCard: document.getElementById('profitPreviewCard'),
+      potentialReturn: document.getElementById('potentialReturn'),
+      potentialProfit: document.getElementById('potentialProfit'),
       lockBtn: document.getElementById('lockBtn'),
       wonBtn: document.getElementById('wonBtn'),
       lostBtn: document.getElementById('lostBtn'),
@@ -381,8 +311,6 @@
       exportPL: document.getElementById('exportPL'),
       exportNextPlay: document.getElementById('exportNextPlay'),
       exportLog: document.getElementById('exportLog'),
-      exportRunStatus: document.getElementById('exportRunStatus'),
-      exportDecisionEdge: document.getElementById('exportDecisionEdge'),
       shareCard: document.getElementById('shareCard'),
       modalOverlay: document.getElementById('modalOverlay'),
       modalTitle: document.getElementById('modalTitle'),
@@ -390,15 +318,7 @@
       modalActions: document.getElementById('modalActions'),
       stepBadge: document.getElementById('stepBadge'),
       stepHint: document.getElementById('stepHint'),
-      setupWarning: document.getElementById('setupWarning'),
-      projBankroll: document.getElementById('projBankroll'),
-      impliedProb: document.getElementById('impliedProb'),
-      riskLevel: document.getElementById('riskLevel'),
-      nextLegNote: document.getElementById('nextLegNote'),
-      cashoutProfit: document.getElementById('cashoutProfit'),
-      cashoutReco: document.getElementById('cashoutReco'),
-      cashoutNote: document.getElementById('cashoutNote'),
-      runStatusText: document.getElementById('runStatusText')
+      setupWarning: document.getElementById('setupWarning')
     };
 
     function round2(n) {
@@ -433,22 +353,10 @@
       return n > 0 ? 1 + (n / 100) : 1 + (100 / Math.abs(n));
     }
 
-    function americanToImpliedProbability(odds) {
-      const n = Number(odds);
-      if (!Number.isFinite(n) || n === 0) return null;
-      return n > 0
-        ? 100 / (n + 100)
-        : Math.abs(n) / (Math.abs(n) + 100);
-    }
-
     function americanProfit(stake, odds) {
       const dec = americanToDecimal(odds);
       if (!dec || !Number.isFinite(stake)) return 0;
       return round2(stake * (dec - 1));
-    }
-
-    function formatPercentFromDecimal(decimalValue) {
-      return `${(Number(decimalValue || 0) * 100).toFixed(1)}%`;
     }
 
     function getStartingBankroll() {
@@ -491,227 +399,6 @@
 
     function hasValidSetup() {
       return getStartingBankroll() > 0 && getTargetBankroll() > getStartingBankroll();
-    }
-
-    function getRiskProfile(odds) {
-      const implied = americanToImpliedProbability(odds);
-      if (implied == null) {
-        return { label: '—', className: '' };
-      }
-      if (implied >= 0.62) {
-        return { label: 'Low', className: 'risk-low' };
-      }
-      if (implied >= 0.48) {
-        return { label: 'Medium', className: 'risk-medium' };
-      }
-      return { label: 'High', className: 'risk-high' };
-    }
-
-    function getRunStatus() {
-      const current = getCurrentBankroll();
-      const goal = getTargetBankroll();
-
-      if (state.bets.length > 0 && current <= 0) {
-        return { label: 'BUSTED', className: 'status-busted', plain: 'Busted' };
-      }
-
-      if (goal > 0 && current >= goal) {
-        return { label: 'GOAL HIT', className: 'status-complete', plain: 'Goal hit' };
-      }
-
-      const lastBet = state.bets[state.bets.length - 1];
-      if (lastBet && lastBet.result === 'cashout') {
-        return { label: 'CASHED OUT', className: 'status-cashed', plain: 'Cashed out' };
-      }
-
-      if (state.pendingBet) {
-        return { label: 'LIVE LEG', className: 'status-running', plain: 'Live leg locked' };
-      }
-
-      return { label: 'RUNNING', className: 'status-running', plain: 'Running' };
-    }
-
-    function getNextLegIntelligence() {
-      const currentBankroll = getCurrentBankroll();
-      const start = getStartingBankroll();
-      const goal = getTargetBankroll();
-      const stake = round2(Number(els.betStake.value));
-      const odds = parseAmericanOdds(els.betOdds.value);
-      const note = els.betNote.value.trim();
-      const legCount = state.bets.length;
-
-      if (!hasValidSetup()) {
-        return {
-          projectedBankroll: currentBankroll,
-          impliedProbability: 0,
-          risk: { label: '—', className: '' },
-          note: 'Set a starting bankroll and goal to begin using the ladder intelligence layer.'
-        };
-      }
-
-      if (state.pendingBet) {
-        const implied = americanToImpliedProbability(state.pendingBet.odds) || 0;
-        const risk = getRiskProfile(state.pendingBet.odds);
-        return {
-          projectedBankroll: round2(currentBankroll + state.pendingBet.profit),
-          impliedProbability: implied,
-          risk,
-          note: 'This leg is locked. Grade the result before planning the next one.'
-        };
-      }
-
-      if (!Number.isFinite(stake) || stake <= 0 || !Number.isFinite(odds) || !note) {
-        return {
-          projectedBankroll: currentBankroll,
-          impliedProbability: 0,
-          risk: { label: '—', className: '' },
-          note: 'Enter a stake, odds, and bet name to preview the next leg.'
-        };
-      }
-
-      if (stake > currentBankroll) {
-        return {
-          projectedBankroll: currentBankroll,
-          impliedProbability: americanToImpliedProbability(odds) || 0,
-          risk: getRiskProfile(odds),
-          note: 'This stake is larger than your current bankroll.'
-        };
-      }
-
-      const implied = americanToImpliedProbability(odds) || 0;
-      const risk = getRiskProfile(odds);
-      const projectedBankroll = round2(currentBankroll + americanProfit(stake, odds));
-      const progressToGoal = goal > 0 ? currentBankroll / goal : 0;
-      const currentProfit = round2(currentBankroll - start);
-
-      let guidance = '';
-
-      if (risk.label === 'High') {
-        guidance = 'Aggressive ladder leg. Good upside, but a miss resets momentum quickly.';
-      } else if (risk.label === 'Medium') {
-        guidance = 'Balanced ladder leg. Reasonable growth with meaningful risk.';
-      } else {
-        guidance = 'Conservative ladder leg. Slower growth, better survival odds.';
-      }
-
-      if (currentProfit > 0 && legCount >= 2) {
-        guidance += ' You have real profit built, so taking a swing should be intentional.';
-      }
-
-      if (progressToGoal >= 0.5) {
-        guidance += ' You are over halfway to goal.';
-      }
-
-      return {
-        projectedBankroll,
-        impliedProbability: implied,
-        risk,
-        note: guidance
-      };
-    }
-
-    function getCashoutBrain() {
-      const start = getStartingBankroll();
-      const current = getCurrentBankroll();
-      const goal = getTargetBankroll();
-      const profit = round2(current - start);
-      const legs = state.bets.length;
-      const previewOdds = state.pendingBet ? state.pendingBet.odds : parseAmericanOdds(els.betOdds.value);
-      const implied = previewOdds != null ? americanToImpliedProbability(previewOdds) : null;
-
-      if (!hasValidSetup()) {
-        return {
-          profit,
-          recommendation: '—',
-          recommendationClass: '',
-          note: 'Complete the bankroll setup first.'
-        };
-      }
-
-      if (current <= 0 && state.bets.length > 0) {
-        return {
-          profit,
-          recommendation: 'Run Over',
-          recommendationClass: 'reco-cash',
-          note: 'This ladder is busted. Restart to begin a new run.'
-        };
-      }
-
-      if (goal > 0 && current >= goal) {
-        return {
-          profit,
-          recommendation: 'Cash It',
-          recommendationClass: 'reco-cash',
-          note: 'Goal already reached. Locking the run makes the most sense.'
-        };
-      }
-
-      if (!state.pendingBet && profit <= 0) {
-        return {
-          profit,
-          recommendation: 'Build First',
-          recommendationClass: '',
-          note: 'No meaningful profit is built yet. Focus on surviving the next leg.'
-        };
-      }
-
-      if (state.pendingBet) {
-        if (profit >= start && legs >= 3) {
-          return {
-            profit,
-            recommendation: 'Strong Cash-Out Spot',
-            recommendationClass: 'reco-cash',
-            note: 'You have doubled or more versus the starting roll and already built multiple legs. This is a strong profit-lock point.'
-          };
-        }
-
-        if (profit > 0 && implied != null && implied < 0.5) {
-          return {
-            profit,
-            recommendation: 'Consider Cashing',
-            recommendationClass: 'reco-consider',
-            note: 'You have profit on the table and the locked leg is relatively aggressive.'
-          };
-        }
-
-        return {
-          profit,
-          recommendation: 'Keep Rolling',
-          recommendationClass: 'reco-hold',
-          note: 'The run is still alive and the risk profile does not strongly favor cashing out yet.'
-        };
-      }
-
-      if (profit > 0 && legs >= 3) {
-        return {
-          profit,
-          recommendation: 'Consider Locking Profit',
-          recommendationClass: 'reco-consider',
-          note: 'You have momentum and banked profit. The next leg should be deliberate, not automatic.'
-        };
-      }
-
-      return {
-        profit,
-        recommendation: 'Keep Building',
-        recommendationClass: 'reco-hold',
-        note: 'Continue building the ladder, but stay selective with the next odds.'
-      };
-    }
-
-    function getDecisionEdgeText() {
-      const nextIntel = getNextLegIntelligence();
-      const cashBrain = getCashoutBrain();
-
-      if (state.pendingBet) {
-        return `${cashBrain.recommendation} · ${nextIntel.risk.label} risk`;
-      }
-
-      if (nextIntel.risk.label === '—') {
-        return cashBrain.note.length > 48 ? 'Waiting for next leg' : cashBrain.note;
-      }
-
-      return `${nextIntel.risk.label} risk · ${cashBrain.recommendation}`;
     }
 
     function saveState() {
@@ -813,6 +500,37 @@
       els.modalOverlay.classList.remove('flex');
     }
 
+    function updateOddsPreview() {
+      const odds = parseAmericanOdds(els.betOdds.value);
+      if (!els.betOdds.value.trim()) {
+        els.oddsPreview.textContent = 'Enter odds like -140, +150, or 150.';
+        els.oddsPreview.className = 'text-xs mt-2 text-slate-400';
+        return;
+      }
+      if (odds === null) {
+        els.oddsPreview.textContent = 'Invalid odds format.';
+        els.oddsPreview.className = 'text-xs mt-2 text-rose-300';
+        return;
+      }
+      els.oddsPreview.textContent = `Using odds ${formatOdds(odds)}`;
+      els.oddsPreview.className = `text-xs mt-2 ${odds > 0 ? 'odds-positive' : 'odds-negative'}`;
+    }
+
+    function updateProfitPreview() {
+      const stake = Number(els.betStake.value);
+      const odds = parseAmericanOdds(els.betOdds.value);
+
+      if (Number.isFinite(stake) && stake > 0 && Number.isFinite(odds) && odds !== 0) {
+        const profit = americanProfit(stake, odds);
+        const ret = round2(stake + profit);
+        els.profitPreviewCard.classList.remove('hidden');
+        els.potentialProfit.textContent = formatMoney(profit);
+        els.potentialReturn.textContent = formatMoney(ret);
+      } else {
+        els.profitPreviewCard.classList.add('hidden');
+      }
+    }
+
     function lockNextPlay() {
       if (!hasValidSetup()) {
         showModal('Finish setup first', 'Enter a starting bankroll above $0 and a goal greater than the starting bankroll before locking a play.', [
@@ -835,7 +553,7 @@
       }
 
       if (!Number.isFinite(odds) || odds === 0) {
-        showModal('Invalid odds', 'Enter American odds in a format like -235, +150, or 235.', [
+        showModal('Invalid odds', 'Enter American odds in a format like -235, +150, or 150.', [
           { label: 'OK', primary: true, onClick: () => {} }
         ]);
         return;
@@ -1082,32 +800,6 @@
       }
     }
 
-    function renderInsights() {
-      const nextIntel = getNextLegIntelligence();
-      const cashBrain = getCashoutBrain();
-      const runStatus = getRunStatus();
-
-      els.projBankroll.textContent = formatMoney(nextIntel.projectedBankroll);
-      els.impliedProb.textContent = formatPercentFromDecimal(nextIntel.impliedProbability);
-      els.riskLevel.textContent = nextIntel.risk.label;
-      els.riskLevel.className = `font-semibold text-right ${nextIntel.risk.className || ''}`;
-      els.nextLegNote.textContent = nextIntel.note;
-
-      els.cashoutProfit.textContent = formatMoney(cashBrain.profit);
-      els.cashoutReco.textContent = cashBrain.recommendation;
-      els.cashoutReco.className = `font-semibold text-right ${cashBrain.recommendationClass || ''}`;
-      els.cashoutNote.textContent = cashBrain.note;
-
-      els.runStatusText.textContent = runStatus.plain;
-    }
-
-    function renderShareCardEnhancements() {
-      const runStatus = getRunStatus();
-      els.exportRunStatus.textContent = runStatus.label;
-      els.exportRunStatus.className = `px-3 py-1 rounded-full text-sm border shrink-0 ${runStatus.className}`;
-      els.exportDecisionEdge.textContent = getDecisionEdgeText();
-    }
-
     function render() {
       const start = getStartingBankroll();
       const current = getCurrentBankroll();
@@ -1137,12 +829,12 @@
 
       els.exportNextPlay.textContent = nextPlay;
 
+      updateOddsPreview();
+      updateProfitPreview();
       renderLockedBet();
       renderHistory();
       renderExportLog();
       renderStepUI();
-      renderInsights();
-      renderShareCardEnhancements();
     }
 
     async function downloadShareCard() {
@@ -1159,12 +851,12 @@
         });
 
         const link = document.createElement('a');
-        link.download = `${(els.runName.value || 'ladder-run').toLowerCase().replace(/[^a-z0-9]+/g, '-')}-share-card.png`;
+        link.download = `${(els.runName.value || 'ladder-run').toLowerCase().replace(/[^a-z0-9]+/g, '-')}-overview.png`;
         link.href = canvas.toDataURL('image/png');
         link.click();
       } catch (error) {
         console.error(error);
-        showModal('Export failed', 'The share card could not be rendered. Refresh the page and try again.', [
+        showModal('Export failed', 'The overview card could not be rendered. Refresh the page and try again.', [
           { label: 'OK', primary: true, onClick: () => {} }
         ]);
       } finally {
@@ -1229,7 +921,6 @@
 
     els.betOdds.addEventListener('input', (e) => {
       let v = e.target.value;
-
       v = v.replace(/\s+/g, '');
       v = v.replace(/[^0-9+-]/g, '');
 
@@ -1240,6 +931,10 @@
       if ((v.match(/[+-]/g) || []).length > 1) {
         const first = v[0];
         v = (first === '+' || first === '-') ? first + v.slice(1).replace(/[+-]/g, '') : v.replace(/[+-]/g, '');
+      }
+
+      if (/^[0-9]/.test(v)) {
+        v = v.replace(/[+-]/g, '');
       }
 
       e.target.value = v;
