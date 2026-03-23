@@ -4,590 +4,1151 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Ladder Tracker</title>
-  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
   <style>
-    body { font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
-    .card-shadow { box-shadow: 0 20px 50px rgba(15, 23, 42, 0.12); }
-    .soft-shadow { box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08); }
+    :root{
+      --bg:#08101d;
+      --panel:#101a2d;
+      --panel-2:#15213a;
+      --line:#263656;
+      --text:#f2f6ff;
+      --muted:#9fb0cd;
+      --green:#38d98a;
+      --blue:#5aa8ff;
+      --danger:#7f1d1d;
+    }
+
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family:Arial, Helvetica, sans-serif;
+      color:var(--text);
+      background:
+        radial-gradient(circle at top, rgba(34,91,255,.35), transparent 28%),
+        linear-gradient(180deg, #07101d 0%, #050b15 100%);
+    }
+
+    .hidden{display:none!important}
+
+    .app{
+      max-width:700px;
+      margin:0 auto;
+      min-height:100vh;
+      padding:72px 14px 84px;
+    }
+
+    .topbar{
+      position:fixed;
+      top:0; left:0; right:0;
+      z-index:20;
+      background:rgba(5,11,21,.92);
+      backdrop-filter:blur(10px);
+      border-bottom:1px solid rgba(50,69,106,.35);
+    }
+
+    .topbar-inner{
+      max-width:700px;
+      margin:0 auto;
+      height:58px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      padding:0 14px;
+    }
+
+    .brand{
+      font-size:18px;
+      font-weight:800;
+      letter-spacing:.02em;
+    }
+
+    .bankroll-pill{
+      padding:8px 12px;
+      border-radius:999px;
+      background:#13213a;
+      border:1px solid rgba(80,108,162,.35);
+      font-weight:700;
+      font-size:14px;
+    }
+
+    .card{
+      background:linear-gradient(180deg, rgba(15,24,42,.98), rgba(12,19,34,.98));
+      border:1px solid rgba(48,66,102,.4);
+      border-radius:20px;
+      padding:16px;
+      margin-bottom:12px;
+      box-shadow:0 10px 28px rgba(0,0,0,.2);
+    }
+
+    .title{
+      font-size:17px;
+      font-weight:800;
+      margin-bottom:8px;
+    }
+
+    .muted{
+      color:var(--muted);
+      font-size:13px;
+    }
+
+    .big{
+      font-size:40px;
+      font-weight:900;
+      line-height:1;
+    }
+
+    .profit-up{
+      color:var(--green);
+      font-weight:800;
+      margin-top:8px;
+    }
+
+    .profit-down{
+      color:#ff8d8d;
+      font-weight:800;
+      margin-top:8px;
+    }
+
+    .summary-grid{
+      display:grid;
+      grid-template-columns:repeat(2, 1fr);
+      gap:10px;
+      margin-top:12px;
+    }
+
+    .mini-stat{
+      background:#121f36;
+      border:1px solid rgba(69,92,138,.28);
+      border-radius:14px;
+      padding:12px;
+    }
+
+    .mini-label{
+      font-size:12px;
+      color:var(--muted);
+      margin-bottom:6px;
+    }
+
+    .mini-value{
+      font-size:18px;
+      font-weight:800;
+    }
+
+    .progress{
+      margin-top:12px;
+      height:12px;
+      border-radius:999px;
+      background:#16233d;
+      border:1px solid rgba(73,96,140,.3);
+      overflow:hidden;
+    }
+
+    .progress-fill{
+      height:100%;
+      width:0%;
+      background:linear-gradient(90deg, #31d57a 0%, #59c6ff 100%);
+    }
+
+    .action-card{
+      background:linear-gradient(180deg,#0a1222,#08101c);
+      border:1px dashed rgba(90,113,157,.45);
+      border-radius:18px;
+      padding:16px;
+    }
+
+    .action-kicker{
+      font-size:12px;
+      text-transform:uppercase;
+      letter-spacing:.08em;
+      color:#9cb0cf;
+      margin-bottom:8px;
+    }
+
+    .action-main{
+      font-size:22px;
+      font-weight:800;
+      margin-bottom:6px;
+    }
+
+    .action-sub{
+      color:var(--muted);
+      font-size:14px;
+    }
+
+    .row{
+      display:flex;
+      gap:10px;
+    }
+
+    .row > *{flex:1}
+
+    input{
+      width:100%;
+      border:none;
+      outline:none;
+      background:#1a2844;
+      color:#fff;
+      border-radius:14px;
+      padding:15px 13px;
+      font-size:16px;
+      margin-top:10px;
+    }
+
+    button{
+      width:100%;
+      border:none;
+      border-radius:14px;
+      padding:15px 12px;
+      font-size:15px;
+      font-weight:800;
+      margin-top:10px;
+      cursor:pointer;
+    }
+
+    button:disabled{
+      opacity:.45;
+      cursor:not-allowed;
+    }
+
+    .primary{
+      color:#fff;
+      background:linear-gradient(90deg,#2f68ff 0%, #36d56d 100%);
+    }
+
+    .ghost{
+      background:#202e4c;
+      color:#e3ebfa;
+    }
+
+    .danger{
+      background:var(--danger);
+      color:#fff;
+    }
+
+    .pill-btn{
+      background:#1a2844;
+      color:#e1e9f7;
+      border:1px solid rgba(90,115,168,.3);
+    }
+
+    .pill-btn.active{
+      background:#223252;
+      border-color:#69c3ff;
+      box-shadow:0 0 0 1px rgba(105,195,255,.4) inset;
+    }
+
+    .log-item{
+      padding:10px 0;
+      border-bottom:1px solid rgba(64,83,122,.25);
+      font-size:14px;
+    }
+    .log-item:last-child{border-bottom:none}
+
+    .nav{
+      position:fixed;
+      left:0; right:0; bottom:0;
+      z-index:20;
+      background:rgba(4,8,16,.96);
+      border-top:1px solid rgba(58,77,112,.3);
+    }
+
+    .nav-inner{
+      max-width:700px;
+      margin:0 auto;
+      display:flex;
+    }
+
+    .nav button{
+      margin:0;
+      border-radius:0;
+      background:transparent;
+      color:#ecf2ff;
+      padding:14px 8px;
+    }
+
+    .toast{
+      position:fixed;
+      left:50%;
+      transform:translateX(-50%);
+      bottom:74px;
+      z-index:30;
+      display:none;
+      background:#071120;
+      border:1px solid rgba(68,92,138,.45);
+      border-radius:12px;
+      padding:10px 14px;
+      font-size:13px;
+    }
+
+    #gameOverModal{
+      position:fixed;
+      inset:0;
+      background:rgba(0,0,0,.68);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      z-index:50;
+    }
+
+    #gameOverModal .modal-box{
+      width:min(92vw,420px);
+      background:linear-gradient(180deg, rgba(10,18,33,.98), rgba(8,14,28,.98));
+      border:1px solid rgba(58,79,118,.35);
+      border-radius:22px;
+      padding:24px;
+      text-align:center;
+    }
+
+    #exportWrap{
+      position:absolute;
+      left:-99999px;
+      top:0;
+      width:1080px;
+    }
+
+    .export-card{
+      width:1080px;
+      padding:24px;
+      border-radius:30px;
+      color:#f4f7fc;
+      background:
+        radial-gradient(circle at 15% 0%, rgba(72,165,255,.18), transparent 28%),
+        radial-gradient(circle at 100% 10%, rgba(33,88,255,.16), transparent 28%),
+        linear-gradient(90deg, #0a1222 0%, #081226 55%, #071536 100%);
+      border:1px solid rgba(86,111,163,.3);
+    }
+
+    .export-top{
+      display:flex;
+      justify-content:space-between;
+      gap:20px;
+    }
+
+    .export-kicker{
+      color:#8eb7ea;
+      text-transform:uppercase;
+      letter-spacing:.08em;
+      font-size:15px;
+      font-weight:700;
+      margin-bottom:8px;
+    }
+
+    .export-title{
+      font-size:58px;
+      font-weight:900;
+      line-height:1.04;
+      margin-bottom:8px;
+    }
+
+    .export-sub{
+      color:#b7c4d8;
+      font-size:22px;
+    }
+
+    .logo-box{
+      width:96px;
+      height:96px;
+      border-radius:18px;
+      border:1px solid rgba(132,154,195,.22);
+      background:rgba(255,255,255,.03);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-weight:700;
+      color:#b9c6db;
+      flex-shrink:0;
+    }
+
+    .export-grid{
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:14px;
+      margin-top:22px;
+    }
+
+    .export-stat{
+      background:rgba(255,255,255,.04);
+      border:1px solid rgba(109,129,166,.2);
+      border-radius:20px;
+      padding:18px 16px;
+    }
+
+    .export-stat-label{
+      color:#aab6ca;
+      text-transform:uppercase;
+      letter-spacing:.06em;
+      font-size:15px;
+      margin-bottom:8px;
+    }
+
+    .export-stat-value{
+      font-size:58px;
+      font-weight:900;
+      line-height:1;
+    }
+
+    .export-next{
+      margin-top:16px;
+      background:linear-gradient(180deg, rgba(17,43,105,.6), rgba(12,29,74,.55));
+      border:1px solid rgba(74,109,196,.35);
+      border-radius:22px;
+      padding:18px 16px;
+    }
+
+    .export-next-title{
+      color:#b9d3ff;
+      text-transform:uppercase;
+      letter-spacing:.08em;
+      font-size:16px;
+      font-weight:700;
+      margin-bottom:14px;
+    }
+
+    .export-next-grid{
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:16px;
+    }
+
+    .export-next-label{
+      color:#aab6ca;
+      font-size:15px;
+      margin-bottom:8px;
+    }
+
+    .export-next-value{
+      font-size:36px;
+      font-weight:900;
+    }
+
+    .export-progress-head{
+      margin-top:18px;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      color:#d6e0ef;
+      font-size:15px;
+    }
+
+    .export-progress{
+      margin-top:8px;
+      height:16px;
+      border-radius:999px;
+      background:#121d33;
+      border:1px solid rgba(94,114,151,.25);
+      overflow:hidden;
+    }
+
+    .export-progress-fill{
+      height:100%;
+      background:linear-gradient(90deg,#35d484 0%, #55c7ff 62%, #5180ff 100%);
+    }
+
+    .step-bubbles{
+      display:flex;
+      gap:12px;
+      margin-top:14px;
+    }
+
+    .step-bubble{
+      width:46px;
+      height:46px;
+      border-radius:999px;
+      border:1px solid rgba(94,114,151,.35);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      color:#b6c3d8;
+      font-weight:700;
+      background:rgba(255,255,255,.03);
+    }
+
+    .step-bubble.win{
+      background:rgba(53,212,132,.14);
+      color:#8df0b8;
+      border-color:rgba(53,212,132,.28);
+    }
+
+    .export-footer{
+      margin-top:18px;
+      border-top:1px solid rgba(94,114,151,.18);
+      padding-top:18px;
+      display:flex;
+      justify-content:space-between;
+      color:#d2dcef;
+      font-size:16px;
+      font-weight:700;
+    }
   </style>
 </head>
-<body class="bg-slate-100 min-h-screen text-slate-900">
-  <div class="max-w-7xl mx-auto p-4 md:p-8 grid lg:grid-cols-[1.15fr_0.85fr] gap-6">
-    <div class="bg-white rounded-[28px] card-shadow overflow-hidden">
-      <div class="p-6 border-b border-slate-200">
-        <div class="flex flex-wrap items-center justify-between gap-4">
-          <div>
-            <h1 class="text-3xl font-bold">Ladder Tracker</h1>
-            <p class="text-sm text-slate-500 mt-1">Track each leg, lock the next play, and grade the run accurately.</p>
+<body>
+
+  <div class="topbar">
+    <div class="topbar-inner">
+      <div class="brand">Ladder Tracker</div>
+      <div id="topBankroll" class="bankroll-pill">$0.00</div>
+    </div>
+  </div>
+
+  <div class="app">
+    <div id="hubView">
+      <div id="setupCard" class="card">
+        <div id="setupStep1">
+          <div class="title">Start your run</div>
+          <input id="startInput" placeholder="$50">
+
+          <div class="row" id="multiRow">
+            <button class="pill-btn" onclick="setMulti(2,event)">2x</button>
+            <button class="pill-btn" onclick="setMulti(5,event)">5x</button>
+            <button class="pill-btn" onclick="setMulti(10,event)">10x</button>
+            <button class="pill-btn" onclick="setMulti(20,event)">20x</button>
           </div>
-          <div class="flex flex-wrap gap-2">
-            <button id="exportBtn" class="px-4 h-11 rounded-2xl border border-slate-300 bg-white hover:bg-slate-50 text-sm font-medium">Export Run</button>
-            <button id="restartBtn" class="px-4 h-11 rounded-2xl border border-slate-300 bg-white hover:bg-slate-50 text-sm font-medium">Restart Run</button>
+
+          <button id="continueBtn" class="primary" disabled onclick="nextSetupStep()">Continue</button>
+        </div>
+
+        <div id="setupStep2" class="hidden">
+          <div class="title">First play</div>
+          <input id="betInput" placeholder="Selection">
+          <input id="oddsInput" type="text" inputmode="text" placeholder="+110 or -235">
+
+          <div class="row">
+            <button class="pill-btn" onclick="setOdds('+100')">+100</button>
+            <button class="pill-btn" onclick="setOdds('-110')">-110</button>
+            <button class="pill-btn" onclick="setOdds('+150')">+150</button>
           </div>
+
+          <button id="startBtn" class="primary" disabled onclick="startRun()">Lock it in</button>
         </div>
       </div>
 
-      <div class="p-6 space-y-6">
-        <div class="grid md:grid-cols-3 gap-4">
-          <div>
-            <label class="block text-sm font-medium mb-2">Run name</label>
-            <input id="runName" value="Road to 1K" class="w-full h-12 rounded-2xl border border-slate-300 px-4 bg-white" />
+      <div id="summaryCard" class="card hidden">
+        <div class="big" id="bankroll">$0.00</div>
+        <div class="muted" id="meta"></div>
+        <div id="profit" class="profit-up"></div>
+
+        <div class="summary-grid">
+          <div class="mini-stat">
+            <div class="mini-label">Banked</div>
+            <div class="mini-value" id="banked">$0.00</div>
           </div>
-          <div>
-            <label class="block text-sm font-medium mb-2">Starting bankroll</label>
-            <input id="startingBankroll" type="number" inputmode="decimal" placeholder="Enter starting bankroll" class="w-full h-12 rounded-2xl border border-slate-300 px-4 bg-white" />
-          </div>
-          <div>
-            <label class="block text-sm font-medium mb-2">Goal bankroll</label>
-            <input id="targetBankroll" type="number" inputmode="decimal" placeholder="Enter goal bankroll" class="w-full h-12 rounded-2xl border border-slate-300 px-4 bg-white" />
+          <div class="mini-stat">
+            <div class="mini-label">Progress</div>
+            <div class="mini-value" id="progressPct">0%</div>
           </div>
         </div>
 
-        <div class="grid sm:grid-cols-2 xl:grid-cols-4 gap-4">
-          <div class="bg-white rounded-[24px] soft-shadow border border-slate-200 p-5">
-            <div class="text-sm text-slate-500">Current bankroll</div>
-            <div id="currentBankrollDisplay" class="text-3xl font-bold mt-2">$0.00</div>
-          </div>
-          <div class="bg-white rounded-[24px] soft-shadow border border-slate-200 p-5">
-            <div class="text-sm text-slate-500">Total P/L</div>
-            <div id="totalProfitDisplay" class="text-3xl font-bold mt-2 text-green-600">+$0.00</div>
-          </div>
-          <div class="bg-white rounded-[24px] soft-shadow border border-slate-200 p-5">
-            <div class="text-sm text-slate-500">Goal</div>
-            <div id="goalDisplay" class="text-3xl font-bold mt-2">$0.00</div>
-          </div>
-          <div class="bg-white rounded-[24px] soft-shadow border border-slate-200 p-5">
-            <div class="text-sm text-slate-500">Heat check</div>
-            <div id="nextPlaySummary" class="text-xl font-bold mt-2">Pending</div>
-          </div>
-        </div>
+        <div id="tension" class="tension"></div>
+        <div class="progress"><div id="bar" class="progress-fill"></div></div>
+      </div>
 
-        <div class="rounded-[24px] border border-slate-200 bg-slate-50 p-5">
-          <div class="flex items-center justify-between text-sm mb-3">
-            <span class="text-slate-500">Run progress</span>
-            <span id="progressLabel" class="font-medium">0%</span>
-          </div>
-          <div class="w-full h-3 bg-slate-200 rounded-full overflow-hidden">
-            <div id="progressBar" class="h-full bg-slate-900 rounded-full" style="width:0%"></div>
-          </div>
-        </div>
+      <div id="mainAction"></div>
 
-        <div class="grid xl:grid-cols-[0.95fr_1.05fr] gap-6">
-          <div class="bg-white rounded-[24px] soft-shadow border border-slate-200 p-5">
-            <h2 class="text-xl font-bold mb-4">Lock next ladder leg</h2>
-            <div class="space-y-4">
-              <div>
-                <label class="block text-sm font-medium mb-2">Stake</label>
-                <input id="betStake" type="number" inputmode="decimal" placeholder="10" class="w-full h-12 rounded-2xl border border-slate-300 px-4 bg-white" />
-              </div>
-              <div>
-                <label class="block text-sm font-medium mb-2">American odds</label>
-                <input id="betOdds" type="number" inputmode="numeric" placeholder="-235" class="w-full h-12 rounded-2xl border border-slate-300 px-4 bg-white" />
-              </div>
-              <div>
-                <label class="block text-sm font-medium mb-2">Note</label>
-                <input id="betNote" placeholder="Optional note" class="w-full h-12 rounded-2xl border border-slate-300 px-4 bg-white" />
-              </div>
-              <button id="lockBtn" class="w-full h-12 rounded-2xl bg-slate-950 text-white font-medium hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed">Lock Next Ladder Leg</button>
-            </div>
-
-            <div id="lockedBetWrap" class="hidden mt-5 space-y-4">
-              <div class="rounded-2xl border border-slate-200 p-4 bg-slate-50">
-                <div class="font-semibold">Locked in</div>
-                <div id="lockedBetLine1" class="text-sm text-slate-600 mt-1"></div>
-                <div id="lockedBetLine2" class="text-sm text-slate-600"></div>
-                <div id="lockedBetNote" class="text-xs text-slate-500 mt-2 hidden"></div>
-              </div>
-
-              <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <button id="wonBtn" class="h-12 rounded-2xl bg-slate-950 text-white font-medium hover:bg-slate-800">Won</button>
-                <button id="lostBtn" class="h-12 rounded-2xl border border-slate-300 bg-white font-medium hover:bg-slate-50">Lost</button>
-                <button id="cashoutBtn" class="h-12 rounded-2xl bg-red-600 text-white font-medium hover:bg-red-700">Cash Out (End Run)</button>
-              </div>
-              <div class="text-xs text-slate-500">Cash Out (End Run) records your actual cash out amount and ends the active play without requiring a full win or loss.</div>
-            </div>
-          </div>
-
-          <div class="bg-white rounded-[24px] soft-shadow border border-slate-200 p-5">
-            <h2 class="text-xl font-bold mb-4">Run history</h2>
-            <div id="historyList" class="space-y-3">
-              <div id="emptyHistory" class="rounded-2xl border border-dashed border-slate-300 p-6 text-slate-500 text-sm">No plays graded yet.</div>
-            </div>
-          </div>
-        </div>
+      <div id="miniTrailCard" class="card hidden">
+        <div class="title">Recent trail</div>
+        <div id="recentTrail"></div>
       </div>
     </div>
 
-    <div id="exportCard" class="w-full max-w-md mx-auto rounded-[28px] overflow-hidden border border-slate-200 bg-white card-shadow self-start">
-      <div class="px-6 py-5 bg-slate-950 text-white">
-        <div class="flex items-center justify-between gap-3">
-          <div>
-            <div class="text-xs uppercase tracking-[0.25em] text-slate-300">Ladder Tracker</div>
-            <div id="exportRunName" class="text-2xl font-bold mt-1">Road to 1K</div>
-          </div>
-          <div class="rounded-2xl bg-white/10 p-3 text-xl">📈</div>
-        </div>
+    <div id="logView" class="hidden">
+      <div class="card">
+        <div class="title">Run summary</div>
+        <div id="logSummary" class="muted"></div>
+        <div id="logEntries" style="margin-top:12px;"></div>
       </div>
-      <div class="p-6 space-y-5">
-        <div class="grid grid-cols-3 gap-3 text-center">
-          <div class="rounded-2xl border border-slate-200 p-3">
-            <div class="text-xs text-slate-500">Start</div>
-            <div id="exportStart" class="font-semibold text-lg">$0.00</div>
-          </div>
-          <div class="rounded-2xl border border-slate-200 p-3">
-            <div class="text-xs text-slate-500">Now</div>
-            <div id="exportNow" class="font-semibold text-lg">$0.00</div>
-          </div>
-          <div class="rounded-2xl border border-slate-200 p-3">
-            <div class="text-xs text-slate-500">Goal</div>
-            <div id="exportGoal" class="font-semibold text-lg">$0.00</div>
-          </div>
-        </div>
+    </div>
 
-        <div class="rounded-2xl bg-slate-50 border border-slate-200 p-4 space-y-2">
-          <div class="flex items-center justify-between text-sm">
-            <span class="text-slate-500">Run Progress</span>
-            <span id="exportProgressLabel" class="font-medium">0%</span>
-          </div>
-          <div class="w-full h-3 bg-slate-200 rounded-full overflow-hidden">
-            <div id="exportProgressBar" class="h-full bg-slate-900 rounded-full" style="width:0%"></div>
-          </div>
-        </div>
-
-        <div class="rounded-2xl border border-slate-200 p-4 space-y-3">
-          <div class="flex items-center justify-between">
-            <span class="text-sm text-slate-500">Profit / Loss</span>
-            <span id="exportPL" class="text-xl font-bold text-green-600">+$0.00</span>
-          </div>
-          <div class="border-t border-slate-200"></div>
-          <div class="space-y-2">
-            <div class="text-sm text-slate-500">Next play</div>
-            <div id="exportNextPlay" class="font-semibold text-base">Pending</div>
-          </div>
-        </div>
-
-        <div class="rounded-2xl border border-slate-200 p-4">
-          <div class="text-sm text-slate-500 mb-3">Run Log</div>
-          <div id="exportLog" class="space-y-2 max-h-80 overflow-auto pr-1">
-            <div class="text-sm text-slate-400">No bets logged yet.</div>
-          </div>
-        </div>
+    <div id="shareView" class="hidden">
+      <div class="card">
+        <div class="title">Share</div>
+        <div class="muted">Export your current ladder card.</div>
+        <button class="primary" onclick="exportProgressCard()">Export progress card</button>
       </div>
     </div>
   </div>
 
-  <div id="modalOverlay" class="hidden fixed inset-0 bg-slate-950/50 p-4 items-center justify-center z-50">
-    <div class="w-full max-w-md bg-white rounded-[28px] p-6 card-shadow">
-      <div class="text-2xl font-bold" id="modalTitle"></div>
-      <div class="text-slate-600 mt-2" id="modalDescription"></div>
-      <div class="mt-6 flex flex-wrap justify-end gap-2" id="modalActions"></div>
+  <div id="toast" class="toast"></div>
+
+  <div id="gameOverModal" class="hidden">
+    <div class="modal-box">
+      <div style="font-size:28px;font-weight:800;margin-bottom:10px;">Run over</div>
+      <div id="gameOverText" style="color:#a8b4c9;font-size:16px;line-height:1.45;margin-bottom:18px;">
+        Win some, lose some.
+      </div>
+      <button class="primary" onclick="restartAfterLoss()">Start new run</button>
+    </div>
+  </div>
+
+  <div id="exportWrap">
+    <div id="exportCardRoot"></div>
+  </div>
+
+  <div class="nav">
+    <div class="nav-inner">
+      <button onclick="switchView('hub')">Hub</button>
+      <button onclick="switchView('log')">Log</button>
+      <button onclick="switchView('share')">Share</button>
     </div>
   </div>
 
   <script>
-    const state = {
-      bets: [],
-      pendingBet: null,
-      shownGoal: false,
-      shownBusted: false,
-    };
+    let run = null;
+    let multiplier = null;
 
-    const els = {
-      runName: document.getElementById('runName'),
-      startingBankroll: document.getElementById('startingBankroll'),
-      targetBankroll: document.getElementById('targetBankroll'),
-      betStake: document.getElementById('betStake'),
-      betOdds: document.getElementById('betOdds'),
-      betNote: document.getElementById('betNote'),
-      lockBtn: document.getElementById('lockBtn'),
-      wonBtn: document.getElementById('wonBtn'),
-      lostBtn: document.getElementById('lostBtn'),
-      cashoutBtn: document.getElementById('cashoutBtn'),
-      restartBtn: document.getElementById('restartBtn'),
-      exportBtn: document.getElementById('exportBtn'),
-      lockedBetWrap: document.getElementById('lockedBetWrap'),
-      lockedBetLine1: document.getElementById('lockedBetLine1'),
-      lockedBetLine2: document.getElementById('lockedBetLine2'),
-      lockedBetNote: document.getElementById('lockedBetNote'),
-      historyList: document.getElementById('historyList'),
-      emptyHistory: document.getElementById('emptyHistory'),
-      currentBankrollDisplay: document.getElementById('currentBankrollDisplay'),
-      totalProfitDisplay: document.getElementById('totalProfitDisplay'),
-      goalDisplay: document.getElementById('goalDisplay'),
-      nextPlaySummary: document.getElementById('nextPlaySummary'),
-      progressLabel: document.getElementById('progressLabel'),
-      progressBar: document.getElementById('progressBar'),
-      exportRunName: document.getElementById('exportRunName'),
-      exportStart: document.getElementById('exportStart'),
-      exportNow: document.getElementById('exportNow'),
-      exportGoal: document.getElementById('exportGoal'),
-      exportProgressLabel: document.getElementById('exportProgressLabel'),
-      exportProgressBar: document.getElementById('exportProgressBar'),
-      exportPL: document.getElementById('exportPL'),
-      exportNextPlay: document.getElementById('exportNextPlay'),
-      exportLog: document.getElementById('exportLog'),
-      modalOverlay: document.getElementById('modalOverlay'),
-      modalTitle: document.getElementById('modalTitle'),
-      modalDescription: document.getElementById('modalDescription'),
-      modalActions: document.getElementById('modalActions'),
-    };
-
-    function round2(n) {
-      return Math.round((Number(n) + Number.EPSILON) * 100) / 100;
+    function round2(n){
+      return Math.round(n * 100) / 100;
     }
 
-    function formatMoney(value) {
-      return new Intl.NumberFormat('en-US', {
-        style: 'currency',
-        currency: 'USD',
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
-      }).format(Number(value || 0));
+    function num(v){
+      return parseFloat(String(v).replace(/[^0-9.-]/g, "")) || 0;
     }
 
-    function formatOdds(odds) {
-      const n = Number(odds);
-      if (!Number.isFinite(n) || n === 0) return '--';
-      return n > 0 ? `+${n}` : `${n}`;
+    function dec(o){
+      const n = parseFloat(String(o).replace(/[^0-9.-]/g, "")) || 0;
+      return String(o).includes("+") ? 1 + n / 100 : 1 + 100 / Math.abs(n);
     }
 
-    function americanToDecimal(odds) {
-      const n = Number(odds);
-      if (!Number.isFinite(n) || n === 0) return null;
-      return n > 0 ? 1 + (n / 100) : 1 + (100 / Math.abs(n));
+    function toast(msg){
+      const el = document.getElementById("toast");
+      el.textContent = msg;
+      el.style.display = "block";
+      setTimeout(() => el.style.display = "none", 1300);
     }
 
-    function americanProfit(stake, odds) {
-      const dec = americanToDecimal(odds);
-      if (!dec || !Number.isFinite(stake)) return 0;
-      return round2(stake * (dec - 1));
+    function setMulti(m, e){
+      multiplier = m;
+      document.querySelectorAll("#multiRow .pill-btn").forEach(btn => btn.classList.remove("active"));
+      e.target.classList.add("active");
+      validateStep1();
     }
 
-    function getStartingBankroll() {
-      const n = Number(els.startingBankroll.value);
-      return Number.isFinite(n) && n >= 0 ? round2(n) : 0;
+    function setOdds(v){
+      document.getElementById("oddsInput").value = v;
+      validateStep2();
     }
 
-    function getTargetBankroll() {
-      const n = Number(els.targetBankroll.value);
-      return Number.isFinite(n) && n > 0 ? round2(n) : 0;
+    function validateStep1(){
+      document.getElementById("continueBtn").disabled = !(document.getElementById("startInput").value.trim() && multiplier);
     }
 
-    function getCurrentBankroll() {
-      const start = getStartingBankroll();
-      return round2(state.bets.reduce((roll, bet) => {
-        if (bet.result === 'win') return roll + bet.profit;
-        if (bet.result === 'loss') return roll - bet.stake;
-        if (bet.result === 'cashout') return roll + (bet.cashoutAmount - bet.stake);
-        return roll;
-      }, start));
+    function validateStep2(){
+      document.getElementById("startBtn").disabled = !(
+        document.getElementById("betInput").value.trim() &&
+        document.getElementById("oddsInput").value.trim()
+      );
     }
 
-    function getProgress(current, start, goal) {
-      if (goal <= start) return 0;
-      return Math.max(0, Math.min(100, ((current - start) / (goal - start)) * 100));
+    document.getElementById("startInput").addEventListener("input", validateStep1);
+    document.getElementById("betInput").addEventListener("input", validateStep2);
+    document.getElementById("oddsInput").addEventListener("input", validateStep2);
+
+    function nextSetupStep(){
+      document.getElementById("setupStep1").classList.add("hidden");
+      document.getElementById("setupStep2").classList.remove("hidden");
     }
 
-    function nextPlayLabel() {
-      if (!state.pendingBet) return 'Pending';
-      const p = state.pendingBet;
-      return `${formatMoney(p.stake)} at ${formatOdds(p.odds)}${p.note ? ` · ${p.note}` : ''}`;
+    function startRun(){
+      const start = num(document.getElementById("startInput").value);
+
+      run = {
+        start,
+        target: start * multiplier,
+        bankroll: start,
+        bank: 0,
+        state: "pending",
+        history: [],
+        pending: {
+          bet: document.getElementById("betInput").value.trim(),
+          odds: document.getElementById("oddsInput").value.trim(),
+          stake: start,
+          slip: null
+        }
+      };
+
+      document.getElementById("setupCard").classList.add("hidden");
+      document.getElementById("summaryCard").classList.remove("hidden");
+      document.getElementById("miniTrailCard").classList.remove("hidden");
+
+      switchView('hub');
+      renderAll();
     }
 
-    function getToneClass(result) {
-      if (result === 'win') return 'bg-green-50 text-green-700 border-green-200';
-      if (result === 'loss') return 'bg-red-50 text-red-700 border-red-200';
-      if (result === 'cashout') return 'bg-amber-50 text-amber-700 border-amber-200';
-      return 'bg-slate-50 text-slate-700 border-slate-200';
+    function totalValue(){
+      return round2((run?.bankroll || 0) + (run?.bank || 0));
     }
 
-    function clearBetInputs() {
-      els.betStake.value = '';
-      els.betOdds.value = '';
-      els.betNote.value = '';
-      state.pendingBet = null;
+    function hasHitGoal(){
+      return run && totalValue() >= run.target;
     }
 
-    function restartRun() {
-      state.bets = [];
-      state.pendingBet = null;
-      state.shownGoal = false;
-      state.shownBusted = false;
-      clearBetInputs();
-      render();
+    function progressPct(){
+      if (!run) return 0;
+      return Math.min(100, Math.round((totalValue() / run.target) * 100));
     }
 
-    function showModal(title, description, actions) {
-      els.modalTitle.textContent = title;
-      els.modalDescription.textContent = description;
-      els.modalActions.innerHTML = '';
-      actions.forEach(action => {
-        const btn = document.createElement('button');
-        btn.textContent = action.label;
-        btn.className = action.primary
-          ? 'px-4 h-11 rounded-2xl bg-slate-950 text-white font-medium hover:bg-slate-800'
-          : 'px-4 h-11 rounded-2xl border border-slate-300 bg-white font-medium hover:bg-slate-50';
-        btn.onclick = () => {
-          hideModal();
-          action.onClick();
-        };
-        els.modalActions.appendChild(btn);
-      });
-      els.modalOverlay.classList.remove('hidden');
-      els.modalOverlay.classList.add('flex');
+    function approxStepCount(){
+      if (!run) return 0;
+      return run.history.length + (run.pending ? 1 : 0);
     }
 
-    function hideModal() {
-      els.modalOverlay.classList.add('hidden');
-      els.modalOverlay.classList.remove('flex');
+    function estimatedTotalSteps(){
+      if (!run) return 0;
+      return Math.max(3, Math.ceil(Math.log(run.target / run.start) / Math.log(2.2)));
     }
 
-    function lockNextPlay() {
-      const stake = round2(Number(els.betStake.value));
-      const odds = Number(els.betOdds.value);
-      const currentBankroll = getCurrentBankroll();
-      if (!Number.isFinite(stake) || stake <= 0) return;
-      if (!Number.isFinite(odds) || odds === 0) return;
-      if (stake > currentBankroll) {
-        showModal('Invalid stake', 'Stake cannot be greater than your current bankroll.', [{ label: 'OK', primary: true, onClick: () => {} }]);
+    function tensionText(){
+      const pct = progressPct();
+      if (pct >= 85) return "Close to goal";
+      if (pct >= 60) return "Building";
+      return "";
+    }
+
+    function updateHeader(){
+      document.getElementById("topBankroll").textContent = run ? `$${round2(run.bankroll).toFixed(2)}` : "$0.00";
+    }
+
+    function switchView(view){
+      document.getElementById("hubView").classList.toggle("hidden", view !== 'hub');
+      document.getElementById("logView").classList.toggle("hidden", view !== 'log');
+      document.getElementById("shareView").classList.toggle("hidden", view !== 'share');
+
+      if (view === 'log' && run) renderLog();
+    }
+
+    function renderAll(){
+      updateHeader();
+      renderHub();
+      renderLog();
+    }
+
+    function renderHub(){
+      if (!run) return;
+
+      if (run.state === "lost" || run.bankroll <= 0) {
+        document.getElementById("bankroll").textContent = "$0.00";
+        document.getElementById("meta").textContent = `Start $${run.start.toFixed(2)} • Goal $${run.target.toFixed(2)}`;
+        document.getElementById("profit").textContent = `Profit: $${round2(totalValue() - run.start).toFixed(2)}`;
+        document.getElementById("profit").className = "profit-down";
+        document.getElementById("banked").textContent = `$${run.bank.toFixed(2)}`;
+        document.getElementById("progressPct").textContent = "0%";
+        document.getElementById("tension").textContent = "";
+        document.getElementById("bar").style.width = "0%";
+        document.getElementById("mainAction").innerHTML = `
+          <div class="card">
+            <div class="title">Run over</div>
+            <div class="muted">This ladder is finished.</div>
+            <button class="primary" onclick="restartAfterLoss()">Start new run</button>
+          </div>
+        `;
+        document.getElementById("recentTrail").innerHTML = renderRecentTrail();
         return;
       }
 
-      const profit = americanProfit(stake, odds);
-      const returnAmount = round2(stake + profit);
-      state.pendingBet = {
-        id: crypto.randomUUID(),
-        stake,
-        odds,
-        note: els.betNote.value.trim(),
-        profit,
-        returnAmount,
-      };
-      render();
+      if (hasHitGoal()) {
+        closeRun("goal");
+        return;
+      }
+
+      document.getElementById("bankroll").textContent = `$${round2(run.bankroll).toFixed(2)}`;
+      document.getElementById("meta").textContent = `Start $${run.start.toFixed(2)} • Goal $${run.target.toFixed(2)}`;
+
+      const netProfit = round2(totalValue() - run.start);
+      const profitEl = document.getElementById("profit");
+      profitEl.textContent = `Profit: $${netProfit.toFixed(2)}`;
+      profitEl.className = netProfit >= 0 ? "profit-up" : "profit-down";
+
+      document.getElementById("banked").textContent = `$${round2(run.bank).toFixed(2)}`;
+      document.getElementById("progressPct").textContent = `${progressPct()}%`;
+      document.getElementById("tension").textContent = tensionText();
+      document.getElementById("bar").style.width = `${progressPct()}%`;
+
+      const mount = document.getElementById("mainAction");
+
+      if (run.state === "pending" && run.pending) {
+        mount.innerHTML = `
+          <div class="action-card">
+            <div class="action-kicker">Your play</div>
+            <div class="action-main">${run.pending.bet}</div>
+            <div class="action-sub">${run.pending.odds} • $${round2(run.pending.stake).toFixed(2)}</div>
+            <div class="row section-gap">
+              <button onclick="markWin()">Win</button>
+              <button onclick="markLoss()">Loss</button>
+            </div>
+          </div>
+        `;
+      } else if (run.state === "decision") {
+        const b = round2(run.bankroll);
+        mount.innerHTML = `
+          <div class="card">
+            <div class="title">Next ladder leg</div>
+            <div class="muted">Bankroll: $${b.toFixed(2)}</div>
+            <div class="muted" style="margin-top:6px;">Choose how much to roll into the next leg.</div>
+
+            <button onclick="chooseStake(1)">Full roll ($${b.toFixed(2)})</button>
+            <button onclick="chooseStake(0.75)">75% roll ($${round2(b * 0.75).toFixed(2)}) — bank $${round2(b * 0.25).toFixed(2)}</button>
+            <button onclick="chooseStake(0.5)">50% roll ($${round2(b * 0.5).toFixed(2)}) — bank $${round2(b * 0.5).toFixed(2)}</button>
+            <button class="danger" onclick="cashOutRun()">Cash Out (End Run)</button>
+          </div>
+        `;
+      } else if (run.state === "addBet") {
+        mount.innerHTML = `
+          <div class="card">
+            <div class="title">Next play</div>
+            <input id="nextBetInput" placeholder="Next bet">
+            <input id="nextOddsInput" type="text" inputmode="text" placeholder="Odds">
+
+            <div class="row">
+              <button class="pill-btn" onclick="setNextOdds('+100')">+100</button>
+              <button class="pill-btn" onclick="setNextOdds('-110')">-110</button>
+              <button class="pill-btn" onclick="setNextOdds('+150')">+150</button>
+            </div>
+
+            <button id="placeBtn" onclick="placeNextBet()">Lock in</button>
+          </div>
+        `;
+
+        setTimeout(() => {
+          const betEl = document.getElementById("nextBetInput");
+          if (betEl) betEl.focus();
+        }, 0);
+      }
+
+      document.getElementById("recentTrail").innerHTML = renderRecentTrail();
     }
 
-    function gradePendingBet(result) {
-      if (!state.pendingBet) return;
-      const completed = {
-        ...state.pendingBet,
-        result,
-        cashoutAmount: result === 'cashout' ? state.pendingBet.stake : undefined,
-        settledAt: new Date().toISOString(),
+    function renderRecentTrail(){
+      if (!run || !run.history.length) return `<div class="muted">No settled plays yet</div>`;
+      return run.history.slice(-2).map((h, i) => {
+        const idx = run.history.length - (run.history.slice(-2).length - i) + 1;
+        return `<div class="log-item">Step ${idx}: ${h.bet} ${h.result}</div>`;
+      }).join("");
+    }
+
+    function renderLog(){
+      if (!run) return;
+
+      const wins = run.history.filter(h => h.result === "W").length;
+      const losses = run.history.filter(h => h.result === "L").length;
+
+      document.getElementById("logSummary").innerHTML =
+        `Start $${run.start.toFixed(2)} • Current $${totalValue().toFixed(2)} • Goal $${run.target.toFixed(2)}<br>Record ${wins}-${losses}`;
+
+      document.getElementById("logEntries").innerHTML =
+        run.history.length
+          ? run.history.map((h, i) => `
+              <div class="log-item">
+                Step ${i + 1}: ${h.bet} (${h.odds}) — ${h.result}
+              </div>
+            `).join("")
+          : `<div class="muted">No settled plays yet</div>`;
+    }
+
+    function showGameOver(message = "Win some, lose some.") {
+      document.getElementById("gameOverText").textContent = message;
+      document.getElementById("gameOverModal").classList.remove("hidden");
+    }
+
+    function restartAfterLoss() {
+      document.getElementById("gameOverModal").classList.add("hidden");
+      resetApp();
+    }
+
+    function checkGoalCompletion() {
+      if (hasHitGoal()) {
+        closeRun("goal");
+        return true;
+      }
+      return false;
+    }
+
+    function markWin(){
+      if (!run || !run.pending) return;
+
+      const stake = run.pending.stake;
+      const decimal = dec(run.pending.odds);
+
+      const totalReturn = round2(stake * decimal);
+      const profit = round2(totalReturn - stake);
+
+      run.history.push({
+        ...run.pending,
+        result: "W",
+        profit,
+        totalReturn
+      });
+
+      run.pending = null;
+      run.bankroll = totalReturn;
+      run.state = "decision";
+
+      if (checkGoalCompletion()) return;
+      renderAll();
+    }
+
+    function markLoss(){
+      if (!run || !run.pending) return;
+
+      run.history.push({ ...run.pending, result: "L" });
+      run.pending = null;
+      run.bankroll = 0;
+      run.state = "lost";
+
+      renderAll();
+      showGameOver("Win some, lose some. This run is done.");
+    }
+
+    function chooseStake(pct){
+      if (!run) return;
+
+      const nextStake = round2(run.bankroll * pct);
+      run.bank = round2(run.bank + (run.bankroll - nextStake));
+      run.nextStake = nextStake;
+      run.state = "addBet";
+
+      if (checkGoalCompletion()) return;
+      renderAll();
+    }
+
+    function setNextOdds(v){
+      const el = document.getElementById("nextOddsInput");
+      if (el) el.value = v;
+    }
+
+    function placeNextBet(){
+      if (!run) return;
+      if (checkGoalCompletion()) return;
+
+      const betEl = document.getElementById("nextBetInput");
+      const oddsEl = document.getElementById("nextOddsInput");
+      if (!betEl || !oddsEl) return;
+
+      const bet = betEl.value.trim();
+      const odds = oddsEl.value.trim();
+
+      if (!bet || !odds) {
+        alert("Enter bet and odds");
+        return;
+      }
+
+      if (run.nextStake > run.bankroll) {
+        alert("Stake exceeds bankroll");
+        return;
+      }
+
+      run.pending = {
+        bet,
+        odds,
+        stake: round2(run.nextStake),
+        slip: null
       };
-      state.bets.push(completed);
-      clearBetInputs();
-      render();
-      postGradeChecks();
+      run.state = "pending";
+      toast("Bet placed");
+      renderAll();
+    }
+
+    function closeRun(reason = "cashout") {
+      if (!run) return;
+
+      const total = totalValue();
+      const profit = round2(total - run.start);
+      const hitGoal = total >= run.target;
+
+      let title = "Run complete";
+      let subtitle = "";
+
+      if (hitGoal) {
+        title = "Goal hit";
+        subtitle = `You cleared your target and finished at $${total.toFixed(2)}.`;
+      } else if (profit > 0) {
+        title = "Profitable cash out";
+        subtitle = `You locked in profit at $${total.toFixed(2)}.`;
+      } else if (profit === 0) {
+        title = "Break-even cash out";
+        subtitle = `You got out flat at $${total.toFixed(2)}.`;
+      } else {
+        title = "Run closed";
+        subtitle = `You finished at $${total.toFixed(2)}.`;
+      }
+
+      runs.push(JSON.parse(JSON.stringify(run)));
+
+      switchView('hub');
+      document.getElementById("hubView").classList.add("hidden");
+      document.getElementById("logView").classList.add("hidden");
+      document.getElementById("shareView").classList.add("hidden");
+      document.getElementById("closedScreen").classList.remove("hidden");
+
+      document.getElementById("closedScreen").innerHTML = `
+        <div class="title">${title}</div>
+        <div class="big">${profit >= 0 ? "+" : ""}$${profit.toFixed(2)}</div>
+        <div class="muted">$${run.start.toFixed(2)} → $${total.toFixed(2)} • Goal $${run.target.toFixed(2)}</div>
+        <div class="muted" style="margin-top:8px;">${subtitle}</div>
+        <button onclick="exportProgressCard()">Export card</button>
+        <button class="ghost" onclick="resetApp()">Run it back</button>
+      `;
     }
 
     function cashOutRun() {
-      if (!state.pendingBet) return;
-      const input = prompt('Enter cash out amount', String(state.pendingBet.stake));
-      if (input === null) return;
-      const amount = round2(Number(input));
-      if (!Number.isFinite(amount) || amount < 0) return;
-
-      const start = getStartingBankroll();
-      const current = getCurrentBankroll();
-      const projectedBankroll = round2(current + (amount - state.pendingBet.stake));
-      const projectedProfit = round2(projectedBankroll - start);
-      const goal = getTargetBankroll();
-
-      state.bets.push({
-        ...state.pendingBet,
-        result: 'cashout',
-        cashoutAmount: amount,
-        settledAt: new Date().toISOString(),
-      });
-      clearBetInputs();
-      render();
-
-      if (projectedProfit > 0 && projectedBankroll < goal) {
-        showModal('Profit secured', `You ended the run before the goal, but still locked in profit. Current bankroll: ${formatMoney(projectedBankroll)}.`, [
-          { label: 'Nice', primary: true, onClick: () => {} }
-        ]);
-      }
-
-      postGradeChecks();
+      closeRun("cashout");
     }
 
-    function postGradeChecks() {
-      const current = getCurrentBankroll();
-      const goal = getTargetBankroll();
+    function getExportNextPlay() {
+      if (run.pending) {
+        const stake = round2(run.pending.stake);
+        const odds = run.pending.odds;
+        const potential = round2(stake * dec(odds));
 
-      if (!state.shownGoal && goal > 0 && current >= goal) {
-        state.shownGoal = true;
-        showModal('Goal hit', `Your bankroll reached ${formatMoney(current)} and cleared the goal of ${formatMoney(goal)}.`, [
-          { label: 'Keep Reviewing', primary: true, onClick: () => {} },
-          { label: 'Start New Run', primary: false, onClick: restartRun }
-        ]);
-        return;
+        return {
+          label: "Next Play",
+          stakeText: `$${stake.toFixed(2)}`,
+          oddsText: odds,
+          potentialText: `$${potential.toFixed(2)}`
+        };
       }
 
-      if (!state.shownBusted && state.bets.length > 0 && current <= 0) {
-        state.shownBusted = true;
-        showModal('Win some lose some', `Bankroll is at ${formatMoney(current)}. This run is over. Reset and start a new one.`, [
-          { label: 'Restart Run', primary: true, onClick: restartRun }
-        ]);
-      }
-    }
-
-    function renderHistory() {
-      els.historyList.innerHTML = '';
-      if (state.bets.length === 0) {
-        const empty = document.createElement('div');
-        empty.className = 'rounded-2xl border border-dashed border-slate-300 p-6 text-slate-500 text-sm';
-        empty.textContent = 'No plays graded yet.';
-        els.historyList.appendChild(empty);
-        return;
+      if (run.state === "addBet" && run.nextStake) {
+        const stake = round2(run.nextStake);
+        return {
+          label: "Next Play",
+          stakeText: `$${stake.toFixed(2)}`,
+          oddsText: "Pending",
+          potentialText: "Pending"
+        };
       }
 
-      state.bets.forEach((bet, idx) => {
-        const item = document.createElement('div');
-        item.className = 'rounded-2xl border border-slate-200 p-4';
-
-        let detail = '';
-        if (bet.result === 'win') detail = `Return ${formatMoney(bet.returnAmount)} · Profit ${formatMoney(bet.profit)}`;
-        if (bet.result === 'loss') detail = `Lost stake ${formatMoney(bet.stake)}`;
-        if (bet.result === 'cashout') detail = `Cash out amount ${formatMoney(bet.cashoutAmount)} · Net ${formatMoney(bet.cashoutAmount - bet.stake)}`;
-
-        item.innerHTML = `
-          <div class="flex flex-wrap items-start justify-between gap-3">
-            <div>
-              <div class="font-semibold">Leg ${idx + 1}</div>
-              <div class="text-sm text-slate-500">${formatMoney(bet.stake)} at ${formatOdds(bet.odds)}</div>
-            </div>
-            <span class="px-3 py-1 rounded-full text-sm border ${getToneClass(bet.result)}">${bet.result === 'cashout' ? 'Cash Out' : bet.result === 'win' ? 'Won' : 'Lost'}</span>
-          </div>
-          <div class="text-sm text-slate-600 mt-2">${detail}</div>
-          ${bet.note ? `<div class="text-xs text-slate-500 mt-2">${bet.note}</div>` : ''}
-        `;
-        els.historyList.appendChild(item);
-      });
-    }
-
-    function renderExportLog() {
-      els.exportLog.innerHTML = '';
-      if (state.bets.length === 0) {
-        const empty = document.createElement('div');
-        empty.className = 'text-sm text-slate-400';
-        empty.textContent = 'No bets logged yet.';
-        els.exportLog.appendChild(empty);
-        return;
-      }
-
-      state.bets.forEach((bet, idx) => {
-        const wrap = document.createElement('div');
-        wrap.className = 'rounded-2xl bg-slate-50 p-3 border border-slate-200';
-
-        let detail = '';
-        if (bet.result === 'win') detail = `Returned ${formatMoney(bet.returnAmount)} · Profit ${formatMoney(bet.profit)}`;
-        if (bet.result === 'loss') detail = `Lost ${formatMoney(bet.stake)}`;
-        if (bet.result === 'cashout') detail = `Cashed out for ${formatMoney(bet.cashoutAmount)} · Net ${formatMoney(bet.cashoutAmount - bet.stake)}`;
-
-        wrap.innerHTML = `
-          <div class="flex items-center justify-between gap-3">
-            <div>
-              <div class="font-medium">Leg ${idx + 1}</div>
-              <div class="text-sm text-slate-500">Stake ${formatMoney(bet.stake)} · Odds ${formatOdds(bet.odds)}</div>
-            </div>
-            <span class="px-3 py-1 rounded-full text-sm border ${getToneClass(bet.result)}">${bet.result === 'cashout' ? 'Cash Out' : bet.result === 'win' ? 'Won' : 'Lost'}</span>
-          </div>
-          <div class="mt-2 text-sm text-slate-600">${detail}</div>
-          ${bet.note ? `<div class="mt-2 text-xs text-slate-500">${bet.note}</div>` : ''}
-        `;
-        els.exportLog.appendChild(wrap);
-      });
-    }
-
-    function renderLockedBet() {
-      if (!state.pendingBet) {
-        els.lockedBetWrap.classList.add('hidden');
-        return;
-      }
-      els.lockedBetWrap.classList.remove('hidden');
-      els.lockedBetLine1.textContent = `Stake ${formatMoney(state.pendingBet.stake)} at ${formatOdds(state.pendingBet.odds)}`;
-      els.lockedBetLine2.textContent = `Potential return ${formatMoney(state.pendingBet.returnAmount)} · Profit ${formatMoney(state.pendingBet.profit)}`;
-      if (state.pendingBet.note) {
-        els.lockedBetNote.textContent = state.pendingBet.note;
-        els.lockedBetNote.classList.remove('hidden');
-      } else {
-        els.lockedBetNote.classList.add('hidden');
-      }
-    }
-
-    function render() {
-      const start = getStartingBankroll();
-      const current = getCurrentBankroll();
-      const goal = getTargetBankroll();
-      const progress = getProgress(current, start, goal);
-      const totalProfit = round2(current - start);
-      const nextPlay = nextPlayLabel();
-
-      els.currentBankrollDisplay.textContent = formatMoney(current);
-      els.goalDisplay.textContent = formatMoney(goal);
-      els.nextPlaySummary.textContent = nextPlay;
-      els.progressLabel.textContent = `${progress.toFixed(0)}%`;
-      els.progressBar.style.width = `${progress}%`;
-
-      els.totalProfitDisplay.textContent = `${totalProfit >= 0 ? '+' : ''}${formatMoney(totalProfit)}`;
-      els.totalProfitDisplay.className = `text-3xl font-bold mt-2 ${totalProfit >= 0 ? 'text-green-600' : 'text-red-600'}`;
-
-      els.exportRunName.textContent = els.runName.value || 'Current Run';
-      els.exportStart.textContent = formatMoney(start);
-      els.exportNow.textContent = formatMoney(current);
-      els.exportGoal.textContent = formatMoney(goal);
-      els.exportProgressLabel.textContent = `${progress.toFixed(0)}%`;
-      els.exportProgressBar.style.width = `${progress}%`;
-      els.exportPL.textContent = `${totalProfit >= 0 ? '+' : ''}${formatMoney(totalProfit)}`;
-      els.exportPL.className = `text-xl font-bold ${totalProfit >= 0 ? 'text-green-600' : 'text-red-600'}`;
-      els.exportNextPlay.textContent = nextPlay;
-
-      const stake = Number(els.betStake.value);
-      const odds = Number(els.betOdds.value);
-      const canLock = Number.isFinite(stake) && stake > 0 && Number.isFinite(odds) && odds !== 0 && stake <= current && !state.pendingBet;
-      els.lockBtn.disabled = !canLock;
-      els.lockBtn.className = `w-full h-12 rounded-2xl font-medium ${canLock ? 'bg-slate-950 text-white hover:bg-slate-800' : 'bg-slate-300 text-slate-500 cursor-not-allowed'}`;
-
-      renderLockedBet();
-      renderHistory();
-      renderExportLog();
-    }
-
-    function exportRunJson() {
-      const payload = {
-        runName: els.runName.value || 'Current Run',
-        startBankroll: getStartingBankroll(),
-        currentBankroll: getCurrentBankroll(),
-        targetBankroll: getTargetBankroll(),
-        bets: state.bets,
-        nextPlayLabel: nextPlayLabel(),
+      return {
+        label: "Next Play",
+        stakeText: "Pending",
+        oddsText: "—",
+        potentialText: "—"
       };
-      const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `${(payload.runName || 'ladder-run').toLowerCase().replace(/[^a-z0-9]+/g, '-')}.json`;
-      a.click();
-      URL.revokeObjectURL(url);
     }
 
-    els.lockBtn.addEventListener('click', lockNextPlay);
-    els.wonBtn.addEventListener('click', () => gradePendingBet('win'));
-    els.lostBtn.addEventListener('click', () => gradePendingBet('loss'));
-    els.cashoutBtn.addEventListener('click', cashOutRun);
-    els.restartBtn.addEventListener('click', restartRun);
-    els.exportBtn.addEventListener('click', exportRunJson);
+    function buildExportCardHtml(){
+      const total = totalValue();
+      const progress = progressPct();
+      const stepNow = approxStepCount();
+      const stepTotal = estimatedTotalSteps();
+      const wins = run.history.filter(h => h.result === "W").length;
+      const nextPlay = getExportNextPlay();
 
-    [els.runName, els.startingBankroll, els.targetBankroll, els.betStake, els.betOdds, els.betNote].forEach(el => {
-      el.addEventListener('input', render);
-    });
+      const bubbles = [];
+      for (let i = 1; i <= stepTotal; i++) {
+        if (i <= wins) {
+          bubbles.push(`<div class="step-bubble win">W</div>`);
+        } else {
+          bubbles.push(`<div class="step-bubble">${i}</div>`);
+        }
+      }
 
-    els.modalOverlay.addEventListener('click', (e) => {
-      if (e.target === els.modalOverlay) hideModal();
-    });
+      let headline = "Ladder Progress";
+      if (total >= run.target) headline = "Goal Hit";
+      else if (!run.pending && run.state !== "addBet" && run.state !== "pending") headline = "Ladder Result";
 
-    render();
+      return `
+        <div class="export-card">
+          <div class="export-top">
+            <div>
+              <div class="export-kicker">Ladder Tracker</div>
+              <div class="export-title">${headline}</div>
+              <div class="export-sub">Step ${stepNow} of ${stepTotal}</div>
+            </div>
+            <div class="logo-box">LT</div>
+          </div>
+
+          <div class="export-grid">
+            <div class="export-stat">
+              <div class="export-stat-label">Start</div>
+              <div class="export-stat-value">$${run.start.toFixed(2)}</div>
+            </div>
+            <div class="export-stat">
+              <div class="export-stat-label">Current</div>
+              <div class="export-stat-value">$${total.toFixed(2)}</div>
+            </div>
+            <div class="export-stat">
+              <div class="export-stat-label">Target</div>
+              <div class="export-stat-value">$${run.target.toFixed(2)}</div>
+            </div>
+          </div>
+
+          <div class="export-next">
+            <div class="export-next-title">${nextPlay.label}</div>
+            <div class="export-next-grid">
+              <div>
+                <div class="export-next-label">Next Bet</div>
+                <div class="export-next-value">${nextPlay.stakeText}</div>
+              </div>
+              <div>
+                <div class="export-next-label">Odds</div>
+                <div class="export-next-value">${nextPlay.oddsText}</div>
+              </div>
+              <div>
+                <div class="export-next-label">Potential</div>
+                <div class="export-next-value">${nextPlay.potentialText}</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="export-progress-head">
+            <span>Progress</span>
+            <span>${progress}%</span>
+          </div>
+          <div class="export-progress">
+            <div class="export-progress-fill" style="width:${progress}%"></div>
+          </div>
+
+          <div class="step-bubbles">
+            ${bubbles.join("")}
+          </div>
+
+          <div class="export-footer">
+            <span>Built with Ladder Tracker</span>
+            <span>laddertracker.app</span>
+          </div>
+        </div>
+      `;
+    }
+
+    function exportProgressCard(){
+      if (!run) return;
+
+      document.getElementById("exportCardRoot").innerHTML = buildExportCardHtml();
+
+      html2canvas(document.getElementById("exportWrap"), {
+        backgroundColor: null,
+        scale: 2
+      }).then(canvas => {
+        const a = document.createElement("a");
+        a.download = "ladder-progress.png";
+        a.href = canvas.toDataURL("image/png");
+        a.click();
+        toast("Export saved");
+      });
+    }
+
+    function resetApp(){
+      run = null;
+      multiplier = null;
+
+      document.getElementById("closedScreen").classList.add("hidden");
+      document.getElementById("setupScreen").classList.remove("hidden");
+      document.getElementById("setupStep1").classList.remove("hidden");
+      document.getElementById("setupStep2").classList.add("hidden");
+      document.getElementById("summaryCard").classList.add("hidden");
+      document.getElementById("miniTrailCard").classList.add("hidden");
+
+      document.getElementById("startInput").value = "";
+      document.getElementById("betInput").value = "";
+      document.getElementById("oddsInput").value = "";
+
+      document.getElementById("continueBtn").disabled = true;
+      document.getElementById("startBtn").disabled = true;
+
+      document.querySelectorAll("#multiRow .pill-btn").forEach(btn => btn.classList.remove("active"));
+      document.getElementById("topBankroll").textContent = "$0.00";
+
+      switchView('hub');
+    }
   </script>
 </body>
 </html>
