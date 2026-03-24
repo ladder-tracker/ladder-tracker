@@ -42,8 +42,8 @@
     .odds-negative { color: #fca5a5; }
   </style>
 </head>
-<body class="bg-app min-h-screen text-slate-100">
-  <div class="max-w-7xl mx-auto p-3 md:p-5 lg:p-8 grid grid-cols-1 xl:grid-cols-[1.08fr_0.92fr] gap-4">
+<body class="bg-app min-h-screen text-slate-100 pb-28">
+  <div class="max-w-7xl mx-auto p-3 md:p-5 lg:p-8 grid grid-cols-1 xl:grid-cols-[1.08fr_0.92fr] gap-4 items-start">
     <div class="glass rounded-[28px] overflow-hidden">
       <div class="p-4 md:p-6 border-b border-white/10">
         <div class="flex items-start justify-between gap-3">
@@ -52,9 +52,9 @@
             <h1 class="text-2xl md:text-4xl font-bold mt-3 text-glow">Ladder Tracker</h1>
             <p class="text-sm md:text-base text-slate-300 mt-2 max-w-2xl">Lock a play, grade the result, then move to the next leg.</p>
           </div>
-          <button id="toggleUtilitiesBtn" class="shrink-0 h-10 px-3 rounded-2xl border border-white/15 bg-white/5 hover:bg-white/10 text-sm font-medium xl:hidden">
-            Tools
-          </button>
+          <div class="shrink-0 text-xs text-slate-400 hidden sm:block">
+            Minimal mode
+          </div>
         </div>
       </div>
 
@@ -185,52 +185,11 @@
             </div>
           </div>
         </div>
-
-        <div id="mobileUtilities" class="hidden xl:hidden glass-soft rounded-[20px] p-4 space-y-3">
-          <div class="text-sm font-semibold text-slate-200">Tools</div>
-          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <div class="flex items-center gap-2">
-              <button id="exportRunBtnMobile" class="flex-1 h-11 rounded-2xl border border-white/15 bg-white/5 hover:bg-white/10 font-medium">Export Run</button>
-              <button id="exportHelpMobile" class="h-11 w-11 rounded-2xl border border-white/15 bg-white/5 hover:bg-white/10 font-semibold">?</button>
-            </div>
-            <div class="flex items-center gap-2">
-              <label for="importRunInputMobile" class="flex-1 h-11 rounded-2xl border border-white/15 bg-white/5 hover:bg-white/10 font-medium inline-flex items-center justify-center cursor-pointer">Import Run</label>
-              <button id="importHelpMobile" class="h-11 w-11 rounded-2xl border border-white/15 bg-white/5 hover:bg-white/10 font-semibold">?</button>
-            </div>
-            <button id="restartBtnMobile" class="h-11 rounded-2xl border border-white/15 bg-white/5 hover:bg-white/10 font-medium">Restart Run</button>
-          </div>
-          <input id="importRunInputMobile" type="file" accept="application/json" class="hidden" />
-        </div>
       </div>
     </div>
 
-    <div class="space-y-3 self-start xl:sticky xl:top-4">
+    <div class="space-y-3 self-start">
       <button id="downloadPngBtn" class="w-full max-w-md mx-auto h-11 rounded-2xl bg-sky-500 hover:bg-sky-400 text-slate-950 font-semibold block">Download Overview PNG</button>
-
-      <a
-        href="https://buy.stripe.com/5kQ9AV1Jr9G79tNbLdeME00"
-        target="_blank"
-        rel="noopener"
-        class="w-full max-w-md mx-auto h-11 rounded-2xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-semibold flex items-center justify-center"
-      >
-        Tip Jar
-      </a>
-
-      <div class="hidden xl:block glass-soft rounded-[20px] p-4 space-y-3 w-full max-w-md mx-auto">
-        <div class="text-sm font-semibold text-slate-200">Tools</div>
-        <div class="grid grid-cols-1 gap-3">
-          <div class="flex items-center gap-2">
-            <button id="exportRunBtn" class="flex-1 h-11 rounded-2xl border border-white/15 bg-white/5 hover:bg-white/10 font-medium">Export Run</button>
-            <button id="exportHelp" class="h-11 w-11 rounded-2xl border border-white/15 bg-white/5 hover:bg-white/10 font-semibold">?</button>
-          </div>
-          <div class="flex items-center gap-2">
-            <label for="importRunInput" class="flex-1 h-11 rounded-2xl border border-white/15 bg-white/5 hover:bg-white/10 font-medium inline-flex items-center justify-center cursor-pointer">Import Run</label>
-            <button id="importHelp" class="h-11 w-11 rounded-2xl border border-white/15 bg-white/5 hover:bg-white/10 font-semibold">?</button>
-          </div>
-          <button id="restartBtn" class="h-11 rounded-2xl border border-white/15 bg-white/5 hover:bg-white/10 font-medium">Restart Run</button>
-        </div>
-        <input id="importRunInput" type="file" accept="application/json" class="hidden" />
-      </div>
 
       <div id="shareCard" class="w-full max-w-md mx-auto rounded-[28px] overflow-hidden border border-white/10 share-gradient shadow-2xl">
         <div class="px-5 py-5 border-b border-white/10">
@@ -303,13 +262,46 @@
     </div>
   </div>
 
+  <div class="fixed bottom-3 left-1/2 -translate-x-1/2 w-[calc(100%-20px)] max-w-2xl z-50">
+    <div class="glass rounded-[24px] px-3 py-3">
+      <div class="grid grid-cols-5 gap-2">
+        <button id="dockDownloadBtn" class="h-12 rounded-2xl bg-sky-500 hover:bg-sky-400 text-slate-950 text-xs font-semibold">
+          PNG
+        </button>
+
+        <button id="dockExportBtn" class="h-12 rounded-2xl border border-white/15 bg-white/5 hover:bg-white/10 text-white text-xs font-medium">
+          Export
+        </button>
+
+        <label for="dockImportInput" class="h-12 rounded-2xl border border-white/15 bg-white/5 hover:bg-white/10 text-white text-xs font-medium inline-flex items-center justify-center cursor-pointer">
+          Import
+        </label>
+
+        <button id="dockRestartBtn" class="h-12 rounded-2xl border border-white/15 bg-white/5 hover:bg-white/10 text-white text-xs font-medium">
+          Restart
+        </button>
+
+        <a
+          href="https://buy.stripe.com/5kQ9AV1Jr9G79tNbLdeME00"
+          target="_blank"
+          rel="noopener"
+          class="h-12 rounded-2xl bg-amber-400 hover:bg-amber-300 text-slate-950 text-xs font-semibold inline-flex items-center justify-center"
+        >
+          Tip Jar
+        </a>
+      </div>
+
+      <input id="dockImportInput" type="file" accept="application/json" class="hidden" />
+    </div>
+  </div>
+
   <script>
     const state = {
       bets: [],
       pendingBet: null,
       shownGoal: false,
       shownBusted: false,
-      storageKey: 'ladder-tracker-mobile-first-v1'
+      storageKey: 'ladder-tracker-mobile-first-v2-minimal'
     };
 
     const els = {
@@ -327,23 +319,6 @@
       wonBtn: document.getElementById('wonBtn'),
       lostBtn: document.getElementById('lostBtn'),
       cashoutBtn: document.getElementById('cashoutBtn'),
-      restartBtn: document.getElementById('restartBtn'),
-      restartBtnMobile: document.getElementById('restartBtnMobile'),
-      downloadPngBtn: document.getElementById('downloadPngBtn'),
-      exportRunBtn: document.getElementById('exportRunBtn'),
-      exportRunBtnMobile: document.getElementById('exportRunBtnMobile'),
-      importRunInput: document.getElementById('importRunInput'),
-      importRunInputMobile: document.getElementById('importRunInputMobile'),
-      exportHelp: document.getElementById('exportHelp'),
-      exportHelpMobile: document.getElementById('exportHelpMobile'),
-      importHelp: document.getElementById('importHelp'),
-      importHelpMobile: document.getElementById('importHelpMobile'),
-      toggleUtilitiesBtn: document.getElementById('toggleUtilitiesBtn'),
-      mobileUtilities: document.getElementById('mobileUtilities'),
-      lockedBetWrap: document.getElementById('lockedBetWrap'),
-      lockedBetLine1: document.getElementById('lockedBetLine1'),
-      lockedBetLine2: document.getElementById('lockedBetLine2'),
-      lockedBetNote: document.getElementById('lockedBetNote'),
       historyList: document.getElementById('historyList'),
       historyCount: document.getElementById('historyCount'),
       currentBankrollDisplay: document.getElementById('currentBankrollDisplay'),
@@ -368,7 +343,12 @@
       modalActions: document.getElementById('modalActions'),
       stepBadge: document.getElementById('stepBadge'),
       stepHint: document.getElementById('stepHint'),
-      setupWarning: document.getElementById('setupWarning')
+      setupWarning: document.getElementById('setupWarning'),
+      lockedBetWrap: document.getElementById('lockedBetWrap'),
+      lockedBetLine1: document.getElementById('lockedBetLine1'),
+      lockedBetLine2: document.getElementById('lockedBetLine2'),
+      lockedBetNote: document.getElementById('lockedBetNote'),
+      downloadPngBtn: document.getElementById('downloadPngBtn')
     };
 
     function round2(n) {
@@ -971,18 +951,6 @@
       }
     }
 
-    function showExportHelp() {
-      showModal('Export Run', 'Save your progress to a file. You can store this file or send it to another device to continue your run there.', [
-        { label: 'Got it', primary: true, onClick: () => {} }
-      ]);
-    }
-
-    function showImportHelp() {
-      showModal('Import Run', 'Load a previously saved run file. This will overwrite your current progress on this device.', [
-        { label: 'Got it', primary: true, onClick: () => {} }
-      ]);
-    }
-
     els.betOdds.addEventListener('input', (e) => {
       let v = e.target.value;
       v = v.replace(/\s+/g, '');
@@ -1010,21 +978,13 @@
     els.wonBtn?.addEventListener('click', () => gradePendingBet('win'));
     els.lostBtn?.addEventListener('click', () => gradePendingBet('loss'));
     els.cashoutBtn?.addEventListener('click', cashOutRun);
-    els.restartBtn?.addEventListener('click', restartRun);
-    els.restartBtnMobile?.addEventListener('click', restartRun);
-    els.downloadPngBtn?.addEventListener('click', downloadShareCard);
-    els.exportRunBtn?.addEventListener('click', exportRunToFile);
-    els.exportRunBtnMobile?.addEventListener('click', exportRunToFile);
-    els.importRunInput?.addEventListener('change', importRunFromFile);
-    els.importRunInputMobile?.addEventListener('change', importRunFromFile);
-    els.exportHelp?.addEventListener('click', showExportHelp);
-    els.exportHelpMobile?.addEventListener('click', showExportHelp);
-    els.importHelp?.addEventListener('click', showImportHelp);
-    els.importHelpMobile?.addEventListener('click', showImportHelp);
 
-    els.toggleUtilitiesBtn?.addEventListener('click', () => {
-      els.mobileUtilities?.classList.toggle('hidden');
-    });
+    document.getElementById('downloadPngBtn')?.addEventListener('click', downloadShareCard);
+    document.getElementById('dockDownloadBtn')?.addEventListener('click', downloadShareCard);
+
+    document.getElementById('dockExportBtn')?.addEventListener('click', exportRunToFile);
+    document.getElementById('dockImportInput')?.addEventListener('change', importRunFromFile);
+    document.getElementById('dockRestartBtn')?.addEventListener('click', restartRun);
 
     [els.runName, els.startingBankroll, els.targetBankroll, els.betStake, els.betNote].forEach(el => {
       el?.addEventListener('input', () => {
