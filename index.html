@@ -17,17 +17,14 @@
     .glass {
       background: rgba(15, 23, 42, 0.72);
       backdrop-filter: blur(12px);
-      border: 1px solid rgba(148, 163, 184, 0.18);
+      border: 1px solid rgba(148, 163, 184, 0.16);
       box-shadow: 0 20px 50px rgba(0,0,0,0.28);
     }
     .glass-soft {
       background: rgba(15, 23, 42, 0.56);
       backdrop-filter: blur(10px);
-      border: 1px solid rgba(148, 163, 184, 0.12);
+      border: 1px solid rgba(148, 163, 184, 0.10);
       box-shadow: 0 12px 30px rgba(0,0,0,0.22);
-    }
-    .text-glow {
-      text-shadow: 0 0 24px rgba(96, 165, 250, 0.18);
     }
     .share-gradient {
       background:
@@ -35,22 +32,35 @@
         radial-gradient(circle at top right, rgba(192,132,252,0.28), transparent 36%),
         linear-gradient(180deg, #0b1220 0%, #101827 100%);
     }
-    .pill-win { background: rgba(34,197,94,0.14); color: #86efac; border-color: rgba(34,197,94,0.25); }
-    .pill-loss { background: rgba(239,68,68,0.14); color: #fca5a5; border-color: rgba(239,68,68,0.25); }
-    .pill-cash { background: rgba(245,158,11,0.14); color: #fcd34d; border-color: rgba(245,158,11,0.25); }
-    .odds-positive { color: #86efac; }
-    .odds-negative { color: #fca5a5; }
+    .text-glow {
+      text-shadow: 0 0 24px rgba(96, 165, 250, 0.18);
+    }
+    .summary-enter {
+      animation: summaryIn 220ms ease-out;
+    }
+    @keyframes summaryIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .toast-in {
+      animation: toastInOut 1800ms ease forwards;
+    }
+    @keyframes toastInOut {
+      0% { opacity: 0; transform: translateY(10px); }
+      10%, 85% { opacity: 1; transform: translateY(0); }
+      100% { opacity: 0; transform: translateY(10px); }
+    }
   </style>
 </head>
 <body class="bg-app min-h-screen text-slate-100 pb-28">
-  <div class="max-w-7xl mx-auto p-3 md:p-5 lg:p-8 grid grid-cols-1 xl:grid-cols-[1.08fr_0.92fr] gap-4 items-start">
+  <div class="max-w-3xl mx-auto p-3 md:p-5 lg:p-8">
     <div class="glass rounded-[28px] overflow-hidden">
       <div class="p-4 md:p-6 border-b border-white/10">
         <div class="flex items-start justify-between gap-3">
           <div class="min-w-0">
-            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-sky-400/20 bg-sky-400/10 text-sky-200 text-[11px] uppercase tracking-[0.25em]">Ladder Mode</div>
+            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-sky-400/20 bg-sky-400/10 text-sky-200 text-[11px] uppercase tracking-[0.25em]">True Ladder</div>
             <h1 class="text-2xl md:text-4xl font-bold mt-3 text-glow">Ladder Tracker</h1>
-            <p class="text-sm md:text-base text-slate-300 mt-2 max-w-2xl">Lock a play, grade the result, then move to the next leg.</p>
+            <p class="text-sm md:text-base text-slate-300 mt-2 max-w-2xl">Roll the full bankroll every leg. Win and climb. Lose and the run is over.</p>
           </div>
           <div class="shrink-0 text-xs text-slate-400 hidden sm:block">
             Minimal mode
@@ -63,19 +73,19 @@
           <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-0">
             <div class="px-1 lg:px-4 lg:border-r lg:border-white/10">
               <div class="text-[11px] uppercase tracking-wide text-slate-400">Current Bankroll</div>
-              <div id="currentBankrollDisplay" class="text-lg md:text-xl font-bold mt-1 break-words">$10.00</div>
+              <div id="currentBankrollDisplay" class="text-lg md:text-xl font-bold mt-1 break-words">$0.00</div>
             </div>
             <div class="px-1 lg:px-4 lg:border-r lg:border-white/10">
               <div class="text-[11px] uppercase tracking-wide text-slate-400">Total P/L</div>
-              <div id="totalProfitDisplay" class="text-lg md:text-xl font-bold mt-1 text-emerald-300 break-words">+$0.00</div>
+              <div id="totalProfitDisplay" class="text-lg md:text-xl font-bold mt-1 break-words text-slate-200">$0.00</div>
             </div>
             <div class="px-1 lg:px-4 lg:border-r lg:border-white/10">
               <div class="text-[11px] uppercase tracking-wide text-slate-400">Goal</div>
-              <div id="goalDisplay" class="text-lg md:text-xl font-bold mt-1 break-words">$1,000.00</div>
+              <div id="goalDisplay" class="text-lg md:text-xl font-bold mt-1 break-words">$0.00</div>
             </div>
             <div class="px-1 lg:px-4">
-              <div class="text-[11px] uppercase tracking-wide text-sky-100/80">Next Play</div>
-              <div id="nextPlaySummary" class="text-sm md:text-base font-bold mt-1 break-words">Pending</div>
+              <div class="text-[11px] uppercase tracking-wide text-sky-100/80">Status</div>
+              <div id="statusSummary" class="text-sm md:text-base font-bold mt-1 break-words">Start your run</div>
             </div>
           </div>
         </div>
@@ -84,11 +94,11 @@
           <div class="flex items-center justify-between gap-3 flex-wrap">
             <div>
               <div class="text-sm text-slate-400">Run progress</div>
-              <div id="stepHint" class="text-xs text-slate-400 mt-1">Step 1: Lock your next play.</div>
+              <div id="stepHint" class="text-xs text-slate-400 mt-1">Step 1: Set your starting bankroll and multiplier.</div>
             </div>
             <div class="text-right">
               <div id="progressLabel" class="font-medium text-sm">0%</div>
-              <div id="stepBadge" class="inline-flex mt-1 px-3 py-1 rounded-full text-xs border bg-sky-500 text-slate-950 border-sky-400 font-semibold">Step 1 · Lock Play</div>
+              <div id="stepBadge" class="inline-flex mt-1 px-3 py-1 rounded-full text-xs border bg-sky-500 text-slate-950 border-sky-400 font-semibold">Step 1 · Start Run</div>
             </div>
           </div>
           <div class="w-full h-3 bg-white/10 rounded-full overflow-hidden">
@@ -96,163 +106,12 @@
           </div>
         </div>
 
-        <div class="glass-soft rounded-[20px] p-4">
-          <div class="text-base font-semibold mb-3">Run Setup</div>
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-            <div>
-              <label class="block text-sm font-medium mb-2 text-slate-300">Run name</label>
-              <input id="runName" value="Road to 1K" class="w-full h-11 rounded-2xl border border-white/10 bg-slate-950/50 px-4 text-white placeholder:text-slate-500" />
-            </div>
-            <div>
-              <label class="block text-sm font-medium mb-2 text-slate-300">Starting bankroll</label>
-              <input id="startingBankroll" type="number" inputmode="decimal" value="10" class="w-full h-11 rounded-2xl border border-white/10 bg-slate-950/50 px-4 text-white placeholder:text-slate-500" />
-            </div>
-            <div>
-              <label class="block text-sm font-medium mb-2 text-slate-300">Goal bankroll</label>
-              <input id="targetBankroll" type="number" inputmode="decimal" value="1000" class="w-full h-11 rounded-2xl border border-white/10 bg-slate-950/50 px-4 text-white placeholder:text-slate-500" />
-            </div>
-          </div>
-        </div>
-
-        <div class="grid grid-cols-1 lg:grid-cols-[1.05fr_0.95fr] gap-4">
-          <div class="glass-soft rounded-[20px] p-4">
-            <div class="flex items-center justify-between gap-3 mb-3">
-              <h2 class="text-lg font-bold">Strict Ladder Flow</h2>
-              <div class="text-xs text-slate-400">No skipping steps</div>
-            </div>
-
-            <div id="setupWarning" class="hidden mb-4 rounded-2xl border border-amber-400/20 bg-amber-400/10 text-amber-200 p-4 text-sm"></div>
-
-            <div class="space-y-4">
-              <div>
-                <label class="block text-sm font-medium mb-2 text-slate-300">Stake</label>
-                <input id="betStake" type="number" inputmode="decimal" placeholder="10" class="w-full h-12 rounded-2xl border border-white/10 bg-slate-950/50 px-4 text-white placeholder:text-slate-500" />
-              </div>
-
-              <div>
-                <label class="block text-sm font-medium mb-2 text-slate-300">American odds</label>
-                <input id="betOdds" type="text" autocapitalize="off" autocomplete="off" autocorrect="off" spellcheck="false" placeholder="-235 or +150 or 150" class="w-full h-12 rounded-2xl border border-white/10 bg-slate-950/50 px-4 text-white placeholder:text-slate-500" />
-                <div id="oddsPreview" class="text-xs mt-2 text-slate-400">Enter odds like -140, +150, or 150.</div>
-              </div>
-
-              <div>
-                <label class="block text-sm font-medium mb-2 text-slate-300">Bet Name or Bet ID</label>
-                <input id="betNote" placeholder="Bears ML, Brady over 300 yards, Bet ID 12345" class="w-full h-12 rounded-2xl border border-white/10 bg-slate-950/50 px-4 text-white placeholder:text-slate-500" />
-              </div>
-            </div>
-
-            <div id="profitPreviewCard" class="mt-4 hidden rounded-2xl border border-white/10 bg-slate-950/35 p-4">
-              <div class="grid grid-cols-2 gap-3">
-                <div>
-                  <div class="text-sm text-slate-400">Potential Return</div>
-                  <div id="potentialReturn" class="text-lg font-bold text-white mt-1">$0.00</div>
-                </div>
-                <div>
-                  <div class="text-sm text-slate-400">Potential Profit</div>
-                  <div id="potentialProfit" class="text-lg font-semibold text-emerald-300 mt-1">$0.00</div>
-                </div>
-              </div>
-            </div>
-
-            <div class="mt-4 space-y-4">
-              <button id="lockBtn" class="w-full h-12 rounded-2xl bg-sky-500 text-slate-950 font-semibold hover:bg-sky-400 disabled:opacity-40 disabled:cursor-not-allowed">Step 1: Lock Next Play</button>
-
-              <div id="lockedBetWrap" class="hidden space-y-4">
-                <div class="rounded-2xl border border-white/10 p-4 bg-slate-950/35">
-                  <div class="font-semibold text-sky-200">Locked In</div>
-                  <div id="lockedBetLine1" class="text-sm text-slate-300 mt-1"></div>
-                  <div id="lockedBetLine2" class="text-sm text-slate-400"></div>
-                  <div id="lockedBetNote" class="text-xs text-slate-500 mt-2 hidden"></div>
-                </div>
-
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                  <button id="wonBtn" class="h-12 rounded-2xl bg-emerald-400 text-slate-950 font-semibold hover:bg-emerald-300 disabled:opacity-40 disabled:cursor-not-allowed">Step 2: Won</button>
-                  <button id="lostBtn" class="h-12 rounded-2xl bg-white text-slate-950 font-semibold hover:bg-slate-200 disabled:opacity-40 disabled:cursor-not-allowed">Step 2: Lost</button>
-                  <button id="cashoutBtn" class="h-12 rounded-2xl bg-rose-500 text-white font-semibold hover:bg-rose-400 disabled:opacity-40 disabled:cursor-not-allowed">Cash Out</button>
-                </div>
-                <div class="text-xs text-slate-400">You must grade this play before you can continue the run.</div>
-              </div>
-            </div>
-          </div>
-
-          <div class="glass-soft rounded-[20px] p-4">
-            <div class="flex items-center justify-between gap-3 mb-3">
-              <h2 class="text-lg font-bold">Run Log</h2>
-              <div class="text-xs text-slate-400" id="historyCount">0 plays</div>
-            </div>
-            <div id="historyList" class="space-y-3 max-h-[360px] overflow-auto pr-1">
-              <div class="rounded-2xl border border-dashed border-white/10 p-6 text-slate-500 text-sm">No plays graded yet.</div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="space-y-3 self-start">
-      <button id="downloadPngBtn" class="w-full max-w-md mx-auto h-11 rounded-2xl bg-sky-500 hover:bg-sky-400 text-slate-950 font-semibold block">Download Overview PNG</button>
-
-      <div id="shareCard" class="w-full max-w-md mx-auto rounded-[28px] overflow-hidden border border-white/10 share-gradient shadow-2xl">
-        <div class="px-5 py-5 border-b border-white/10">
-          <div class="flex items-center justify-between gap-3">
-            <div class="min-w-0">
-              <div class="text-xs uppercase tracking-[0.25em] text-slate-400">Ladder Tracker</div>
-              <div id="exportRunName" class="text-2xl font-bold mt-1 text-white break-words">Road to 1K</div>
-            </div>
-            <div class="rounded-2xl bg-white/10 px-3 py-2 text-lg shrink-0">🚀</div>
-          </div>
-        </div>
-
-        <div class="p-5 space-y-4">
-          <div class="grid grid-cols-3 gap-3 text-center items-center">
-            <div class="rounded-2xl border border-white/10 bg-white/5 p-3 flex flex-col items-center justify-center">
-              <div class="text-xs text-slate-400">Start</div>
-              <div id="exportStart" class="font-semibold text-lg text-white break-words">$10.00</div>
-            </div>
-            <div class="rounded-2xl border border-white/10 bg-white/5 p-3 flex flex-col items-center justify-center">
-              <div class="text-xs text-slate-400">Now</div>
-              <div id="exportNow" class="font-semibold text-lg md:text-xl text-white break-words">$10.00</div>
-            </div>
-            <div class="rounded-2xl border border-white/10 bg-white/5 p-3 flex flex-col items-center justify-center">
-              <div class="text-xs text-slate-400">Goal</div>
-              <div id="exportGoal" class="font-semibold text-lg text-white break-words">$1,000.00</div>
-            </div>
-          </div>
-
-          <div class="rounded-2xl bg-white/5 border border-white/10 p-4 space-y-2">
-            <div class="flex items-center justify-between text-sm">
-              <span class="text-slate-400">Run Progress</span>
-              <span id="exportProgressLabel" class="font-medium text-white">0%</span>
-            </div>
-            <div class="w-full h-3 bg-white/10 rounded-full overflow-hidden">
-              <div id="exportProgressBar" class="h-full rounded-full bg-gradient-to-r from-sky-400 to-violet-400" style="width:0%"></div>
-            </div>
-          </div>
-
-          <div class="rounded-2xl border border-white/10 bg-white/5 p-4 space-y-3">
-            <div class="flex items-center justify-between gap-4">
-              <span class="text-sm text-slate-400">Profit / Loss</span>
-              <span id="exportPL" class="text-2xl font-bold text-emerald-300 text-right break-words">+$0.00</span>
-            </div>
-            <div class="border-t border-white/10"></div>
-            <div class="space-y-2">
-              <div class="text-sm text-slate-400">Next Play</div>
-              <div id="exportNextPlay" class="font-semibold text-base break-words text-white">Pending</div>
-            </div>
-          </div>
-
-          <div class="rounded-2xl border border-white/10 bg-white/5 p-4">
-            <div class="flex items-center justify-between gap-3 mb-3">
-              <div class="text-sm text-slate-400">Overview Log</div>
-              <div class="text-xs text-slate-500">Share-ready</div>
-            </div>
-            <div id="exportLog" class="space-y-2 max-h-80 overflow-auto pr-1">
-              <div class="text-sm text-slate-500">No bets logged yet.</div>
-            </div>
-          </div>
-        </div>
+        <div id="stepsWrap" class="space-y-3"></div>
       </div>
     </div>
   </div>
+
+  <div id="toast" class="hidden fixed bottom-24 left-1/2 -translate-x-1/2 z-50"></div>
 
   <div id="modalOverlay" class="hidden fixed inset-0 bg-slate-950/70 p-4 items-center justify-center z-50">
     <div class="w-full max-w-md bg-slate-900 border border-white/10 rounded-[28px] p-6 shadow-2xl">
@@ -262,93 +121,142 @@
     </div>
   </div>
 
-  <div class="fixed bottom-3 left-1/2 -translate-x-1/2 w-[calc(100%-20px)] max-w-2xl z-50">
-    <div class="glass rounded-[24px] px-3 py-3">
-      <div class="grid grid-cols-5 gap-2">
-        <button id="dockDownloadBtn" class="h-12 rounded-2xl bg-sky-500 hover:bg-sky-400 text-slate-950 text-xs font-semibold">
-          PNG
-        </button>
-
-        <button id="dockExportBtn" class="h-12 rounded-2xl border border-white/15 bg-white/5 hover:bg-white/10 text-white text-xs font-medium">
-          Export
-        </button>
-
-        <label for="dockImportInput" class="h-12 rounded-2xl border border-white/15 bg-white/5 hover:bg-white/10 text-white text-xs font-medium inline-flex items-center justify-center cursor-pointer">
-          Import
-        </label>
-
-        <button id="dockRestartBtn" class="h-12 rounded-2xl border border-white/15 bg-white/5 hover:bg-white/10 text-white text-xs font-medium">
-          Restart
-        </button>
-
-        <a
-          href="buymeacoffee.com/laddertracker"
-          target="_blank"
-          rel="noopener"
-          class="h-12 rounded-2xl bg-amber-400 hover:bg-amber-300 text-slate-950 text-xs font-semibold inline-flex items-center justify-center"
-        >
-          Tip Jar
-        </a>
+  <div id="shareRenderWrap" class="fixed -left-[9999px] top-0 z-[-1]">
+    <div id="shareCard" class="w-[430px] rounded-[28px] overflow-hidden border border-white/10 share-gradient shadow-2xl text-slate-100">
+      <div class="px-6 py-5 border-b border-white/10">
+        <div class="flex items-center justify-between gap-3">
+          <div class="min-w-0">
+            <div class="text-xs uppercase tracking-[0.25em] text-slate-400">Ladder Tracker</div>
+            <div class="text-3xl font-bold mt-2 text-white break-words">Road to <span id="shareMultiplierLabel">10x</span> 🚀</div>
+          </div>
+          <div class="rounded-2xl bg-white/10 px-3 py-2 text-2xl shrink-0">👀</div>
+        </div>
       </div>
 
-      <input id="dockImportInput" type="file" accept="application/json" class="hidden" />
+      <div class="p-6 space-y-5">
+        <div class="rounded-2xl border border-white/10 bg-white/5 p-5 text-center">
+          <div class="text-sm text-slate-400">Current Ladder</div>
+          <div class="text-4xl font-black mt-2 text-white" id="shareHeadline">$10 → $24</div>
+        </div>
+
+        <div class="rounded-2xl bg-white/5 border border-white/10 p-4 space-y-2">
+          <div class="flex items-center justify-between text-sm">
+            <span class="text-slate-400">Progress</span>
+            <span id="shareProgressLabel" class="font-medium text-white">0%</span>
+          </div>
+          <div class="w-full h-3 bg-white/10 rounded-full overflow-hidden">
+            <div id="shareProgressBar" class="h-full rounded-full bg-gradient-to-r from-sky-400 to-violet-400" style="width:0%"></div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-3 gap-3 text-center items-center">
+          <div class="rounded-2xl border border-white/10 bg-white/5 p-3">
+            <div class="text-xs text-slate-400">Start</div>
+            <div id="shareStart" class="font-semibold text-lg text-white break-words">$10.00</div>
+          </div>
+          <div class="rounded-2xl border border-white/10 bg-white/5 p-3">
+            <div class="text-xs text-slate-400">Now</div>
+            <div id="shareNow" class="font-semibold text-lg text-white break-words">$24.00</div>
+          </div>
+          <div class="rounded-2xl border border-white/10 bg-white/5 p-3">
+            <div class="text-xs text-slate-400">Goal</div>
+            <div id="shareGoal" class="font-semibold text-lg text-white break-words">$100.00</div>
+          </div>
+        </div>
+
+        <div class="rounded-2xl border border-white/10 bg-white/5 p-4 space-y-3">
+          <div class="flex items-center justify-between gap-3">
+            <div class="text-sm text-slate-400">Last plays</div>
+            <div class="text-xs text-slate-500">Momentum</div>
+          </div>
+          <div id="shareLastPlays" class="space-y-2 text-white"></div>
+        </div>
+
+        <div class="rounded-2xl border border-white/10 bg-white/5 p-4">
+          <div class="text-sm text-slate-400">Next</div>
+          <div id="shareNext" class="font-semibold text-base break-words text-white mt-1">Leg loading...</div>
+        </div>
+
+        <div class="text-center pt-1">
+          <div id="shareHype" class="text-xl font-bold text-white">Can this hit 10x?</div>
+          <div class="text-sm text-slate-400 mt-1">Follow the run 👀</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="fixed bottom-3 left-1/2 -translate-x-1/2 w-[calc(100%-20px)] max-w-2xl z-50">
+    <div class="glass rounded-[24px] px-3 py-3">
+      <div class="grid grid-cols-4 gap-2">
+        <button id="dockShareBtn" class="h-12 rounded-2xl bg-sky-500 hover:bg-sky-400 text-slate-950 text-xs font-semibold disabled:opacity-40 disabled:cursor-not-allowed">
+          Share
+        </button>
+
+        <button id="dockSaveBtn" class="h-12 rounded-2xl border border-white/15 bg-white/5 hover:bg-white/10 text-white text-xs font-medium">
+          Save
+        </button>
+
+        <label for="dockLoadInput" class="h-12 rounded-2xl border border-white/15 bg-white/5 hover:bg-white/10 text-white text-xs font-medium inline-flex items-center justify-center cursor-pointer">
+          Load
+        </label>
+
+        <button id="dockResetBtn" class="h-12 rounded-2xl border border-white/15 bg-white/5 hover:bg-white/10 text-white text-xs font-medium">
+          Reset
+        </button>
+      </div>
+
+      <input id="dockLoadInput" type="file" accept="application/json" class="hidden" />
     </div>
   </div>
 
   <script>
+    const DEFAULT_MULTIPLIER = 10;
+    const MAX_VISIBLE_ENTRIES = 6;
+
     const state = {
+      start: 0,
+      bankroll: 0,
+      goal: 0,
+      multiplier: DEFAULT_MULTIPLIER,
+      legNumber: 0,
       bets: [],
-      pendingBet: null,
-      shownGoal: false,
-      shownBusted: false,
-      storageKey: 'ladder-tracker-mobile-first-v2-minimal'
+      pending: null,
+      step: 1,
+      hasRunStarted: false,
+      bust: false,
+      storageKey: 'ladder-tracker-true-ladder-v1'
     };
 
     const els = {
-      runName: document.getElementById('runName'),
-      startingBankroll: document.getElementById('startingBankroll'),
-      targetBankroll: document.getElementById('targetBankroll'),
-      betStake: document.getElementById('betStake'),
-      betOdds: document.getElementById('betOdds'),
-      betNote: document.getElementById('betNote'),
-      oddsPreview: document.getElementById('oddsPreview'),
-      profitPreviewCard: document.getElementById('profitPreviewCard'),
-      potentialReturn: document.getElementById('potentialReturn'),
-      potentialProfit: document.getElementById('potentialProfit'),
-      lockBtn: document.getElementById('lockBtn'),
-      wonBtn: document.getElementById('wonBtn'),
-      lostBtn: document.getElementById('lostBtn'),
-      cashoutBtn: document.getElementById('cashoutBtn'),
-      historyList: document.getElementById('historyList'),
-      historyCount: document.getElementById('historyCount'),
       currentBankrollDisplay: document.getElementById('currentBankrollDisplay'),
       totalProfitDisplay: document.getElementById('totalProfitDisplay'),
       goalDisplay: document.getElementById('goalDisplay'),
-      nextPlaySummary: document.getElementById('nextPlaySummary'),
+      statusSummary: document.getElementById('statusSummary'),
       progressLabel: document.getElementById('progressLabel'),
       progressBar: document.getElementById('progressBar'),
-      exportRunName: document.getElementById('exportRunName'),
-      exportStart: document.getElementById('exportStart'),
-      exportNow: document.getElementById('exportNow'),
-      exportGoal: document.getElementById('exportGoal'),
-      exportProgressLabel: document.getElementById('exportProgressLabel'),
-      exportProgressBar: document.getElementById('exportProgressBar'),
-      exportPL: document.getElementById('exportPL'),
-      exportNextPlay: document.getElementById('exportNextPlay'),
-      exportLog: document.getElementById('exportLog'),
-      shareCard: document.getElementById('shareCard'),
+      stepBadge: document.getElementById('stepBadge'),
+      stepHint: document.getElementById('stepHint'),
+      stepsWrap: document.getElementById('stepsWrap'),
+      toast: document.getElementById('toast'),
       modalOverlay: document.getElementById('modalOverlay'),
       modalTitle: document.getElementById('modalTitle'),
       modalDescription: document.getElementById('modalDescription'),
       modalActions: document.getElementById('modalActions'),
-      stepBadge: document.getElementById('stepBadge'),
-      stepHint: document.getElementById('stepHint'),
-      setupWarning: document.getElementById('setupWarning'),
-      lockedBetWrap: document.getElementById('lockedBetWrap'),
-      lockedBetLine1: document.getElementById('lockedBetLine1'),
-      lockedBetLine2: document.getElementById('lockedBetLine2'),
-      lockedBetNote: document.getElementById('lockedBetNote'),
-      downloadPngBtn: document.getElementById('downloadPngBtn')
+      dockShareBtn: document.getElementById('dockShareBtn'),
+      dockSaveBtn: document.getElementById('dockSaveBtn'),
+      dockLoadInput: document.getElementById('dockLoadInput'),
+      dockResetBtn: document.getElementById('dockResetBtn'),
+      shareMultiplierLabel: document.getElementById('shareMultiplierLabel'),
+      shareHeadline: document.getElementById('shareHeadline'),
+      shareStart: document.getElementById('shareStart'),
+      shareNow: document.getElementById('shareNow'),
+      shareGoal: document.getElementById('shareGoal'),
+      shareProgressLabel: document.getElementById('shareProgressLabel'),
+      shareProgressBar: document.getElementById('shareProgressBar'),
+      shareLastPlays: document.getElementById('shareLastPlays'),
+      shareNext: document.getElementById('shareNext'),
+      shareHype: document.getElementById('shareHype'),
+      shareCard: document.getElementById('shareCard')
     };
 
     function round2(n) {
@@ -362,6 +270,13 @@
         minimumFractionDigits: 2,
         maximumFractionDigits: 2
       }).format(Number(value || 0));
+    }
+
+    function formatMoneySigned(value) {
+      const n = Number(value || 0);
+      if (n > 0) return `+${formatMoney(n)}`;
+      if (n < 0) return `-${formatMoney(Math.abs(n))}`;
+      return formatMoney(0);
     }
 
     function formatOdds(odds) {
@@ -385,124 +300,36 @@
       return n > 0 ? 1 + (n / 100) : 1 + (100 / Math.abs(n));
     }
 
-    function americanProfit(stake, odds) {
-      const dec = americanToDecimal(odds);
-      if (!dec || !Number.isFinite(stake)) return 0;
-      return round2(stake * (dec - 1));
+    function getProgressPct() {
+      if (!state.hasRunStarted || state.goal <= state.start) return 0;
+      const pct = ((state.bankroll - state.start) / (state.goal - state.start)) * 100;
+      return Math.max(0, Math.min(100, pct));
     }
 
-    function getStartingBankroll() {
-      const n = Number(els.startingBankroll.value);
-      return Number.isFinite(n) && n >= 0 ? round2(n) : 0;
+    function buildSupportLink() {
+      return `
+        <a
+          href="https://buy.stripe.com/5kQ9AV1Jr9G79tNbLdeME00"
+          target="_blank"
+          rel="noopener"
+          class="inline-flex items-center justify-center rounded-2xl border border-amber-300/20 bg-amber-400/10 px-4 py-3 text-sm font-medium text-amber-200 hover:bg-amber-400/15"
+        >
+          Enjoying this? Support the tool
+        </a>
+      `;
     }
 
-    function getTargetBankroll() {
-      const n = Number(els.targetBankroll.value);
-      return Number.isFinite(n) && n > 0 ? round2(n) : 0;
-    }
-
-    function getCurrentBankroll() {
-      const start = getStartingBankroll();
-      return round2(state.bets.reduce((roll, bet) => {
-        if (bet.result === 'win') return roll + bet.profit;
-        if (bet.result === 'loss') return roll - bet.stake;
-        if (bet.result === 'cashout') return roll + (bet.cashoutAmount - bet.stake);
-        return roll;
-      }, start));
-    }
-
-    function getProgress(current, start, goal) {
-      if (goal <= start) return 0;
-      return Math.max(0, Math.min(100, ((current - start) / (goal - start)) * 100));
-    }
-
-    function nextPlayLabel() {
-      if (!state.pendingBet) return 'Pending';
-      const p = state.pendingBet;
-      return `${formatMoney(p.stake)} at ${formatOdds(p.odds)} · ${p.note}`;
-    }
-
-    function statusTone(result) {
-      if (result === 'win') return 'pill-win';
-      if (result === 'loss') return 'pill-loss';
-      if (result === 'cashout') return 'pill-cash';
-      return 'bg-white/10 text-slate-300 border-white/10';
-    }
-
-    function hasValidSetup() {
-      return getStartingBankroll() > 0 && getTargetBankroll() > getStartingBankroll();
-    }
-
-    function saveState() {
-      const payload = {
-        runName: els.runName.value,
-        startingBankroll: els.startingBankroll.value,
-        targetBankroll: els.targetBankroll.value,
-        betStake: els.betStake.value,
-        betOdds: els.betOdds.value,
-        betNote: els.betNote.value,
-        bets: state.bets,
-        pendingBet: state.pendingBet,
-        shownGoal: state.shownGoal,
-        shownBusted: state.shownBusted
-      };
-      localStorage.setItem(state.storageKey, JSON.stringify(payload));
-    }
-
-    function getExportPayload() {
-      return {
-        version: 1,
-        exportedAt: new Date().toISOString(),
-        runName: els.runName.value,
-        startingBankroll: els.startingBankroll.value,
-        targetBankroll: els.targetBankroll.value,
-        betStake: els.betStake.value,
-        betOdds: els.betOdds.value,
-        betNote: els.betNote.value,
-        bets: state.bets,
-        pendingBet: state.pendingBet,
-        shownGoal: state.shownGoal,
-        shownBusted: state.shownBusted
-      };
-    }
-
-    function loadState() {
-      try {
-        const raw = localStorage.getItem(state.storageKey);
-        if (!raw) return;
-        const data = JSON.parse(raw);
-        els.runName.value = data.runName ?? 'Road to 1K';
-        els.startingBankroll.value = data.startingBankroll ?? '10';
-        els.targetBankroll.value = data.targetBankroll ?? '1000';
-        els.betStake.value = data.betStake ?? '';
-        els.betOdds.value = data.betOdds ?? '';
-        els.betNote.value = data.betNote ?? '';
-        state.bets = Array.isArray(data.bets) ? data.bets : [];
-        state.pendingBet = data.pendingBet || null;
-        state.shownGoal = Boolean(data.shownGoal);
-        state.shownBusted = Boolean(data.shownBusted);
-      } catch (e) {
-        console.error('Failed to load saved state', e);
-      }
-    }
-
-    function clearBetInputs() {
-      els.betStake.value = '';
-      els.betOdds.value = '';
-      els.betNote.value = '';
-      state.pendingBet = null;
-    }
-
-    function restartRun() {
-      state.bets = [];
-      state.pendingBet = null;
-      state.shownGoal = false;
-      state.shownBusted = false;
-      els.betStake.value = '';
-      els.betOdds.value = '';
-      els.betNote.value = '';
-      saveState();
-      render();
+    function showToast(text) {
+      els.toast.innerHTML = `
+        <div class="glass rounded-2xl px-4 py-3 text-sm text-white toast-in">
+          ${text}
+        </div>
+      `;
+      els.toast.classList.remove('hidden');
+      setTimeout(() => {
+        els.toast.classList.add('hidden');
+        els.toast.innerHTML = '';
+      }, 1800);
     }
 
     function showModal(title, description, actions) {
@@ -532,390 +359,640 @@
       els.modalOverlay.classList.remove('flex');
     }
 
-    function updateOddsPreview() {
-      const odds = parseAmericanOdds(els.betOdds.value);
-      if (!els.betOdds.value.trim()) {
-        els.oddsPreview.textContent = 'Enter odds like -140, +150, or 150.';
-        els.oddsPreview.className = 'text-xs mt-2 text-slate-400';
-        return;
-      }
-      if (odds === null) {
-        els.oddsPreview.textContent = 'Invalid odds format.';
-        els.oddsPreview.className = 'text-xs mt-2 text-rose-300';
-        return;
-      }
-      els.oddsPreview.textContent = `Using odds ${formatOdds(odds)}`;
-      els.oddsPreview.className = `text-xs mt-2 ${odds > 0 ? 'odds-positive' : 'odds-negative'}`;
+    function saveLocal() {
+      localStorage.setItem(state.storageKey, JSON.stringify({
+        start: state.start,
+        bankroll: state.bankroll,
+        goal: state.goal,
+        multiplier: state.multiplier,
+        legNumber: state.legNumber,
+        bets: state.bets,
+        pending: state.pending,
+        step: state.step,
+        hasRunStarted: state.hasRunStarted,
+        bust: state.bust
+      }));
     }
 
-    function updateProfitPreview() {
-      const stake = Number(els.betStake.value);
-      const odds = parseAmericanOdds(els.betOdds.value);
-
-      if (Number.isFinite(stake) && stake > 0 && Number.isFinite(odds) && odds !== 0) {
-        const profit = americanProfit(stake, odds);
-        const ret = round2(stake + profit);
-        els.profitPreviewCard.classList.remove('hidden');
-        els.potentialProfit.textContent = formatMoney(profit);
-        els.potentialReturn.textContent = formatMoney(ret);
-      } else {
-        els.profitPreviewCard.classList.add('hidden');
+    function loadLocal() {
+      try {
+        const raw = localStorage.getItem(state.storageKey);
+        if (!raw) return;
+        const data = JSON.parse(raw);
+        if (!isValidState(data)) return;
+        applyLoadedState(data);
+      } catch (e) {
+        console.error('Failed to load saved state', e);
       }
     }
 
-    function lockNextPlay() {
-      if (!hasValidSetup()) {
-        showModal('Finish setup first', 'Enter a starting bankroll above $0 and a goal greater than the starting bankroll before locking a play.', [
-          { label: 'OK', primary: true, onClick: () => {} }
-        ]);
-        return;
-      }
-      if (state.pendingBet) return;
-
-      const stake = round2(Number(els.betStake.value));
-      const odds = parseAmericanOdds(els.betOdds.value);
-      const betLabel = els.betNote.value.trim();
-      const currentBankroll = getCurrentBankroll();
-
-      if (!Number.isFinite(stake) || stake <= 0) {
-        showModal('Invalid stake', 'Enter a valid stake amount greater than $0.', [
-          { label: 'OK', primary: true, onClick: () => {} }
-        ]);
-        return;
-      }
-
-      if (!Number.isFinite(odds) || odds === 0) {
-        showModal('Invalid odds', 'Enter American odds in a format like -235, +150, or 150.', [
-          { label: 'OK', primary: true, onClick: () => {} }
-        ]);
-        return;
-      }
-
-      if (!betLabel) {
-        showModal('Bet name required', 'Enter the bet name or bet ID before locking the play.', [
-          { label: 'OK', primary: true, onClick: () => {} }
-        ]);
-        return;
-      }
-
-      if (stake > currentBankroll) {
-        showModal('Invalid stake', 'Stake cannot be greater than your current bankroll.', [
-          { label: 'OK', primary: true, onClick: () => {} }
-        ]);
-        return;
-      }
-
-      const profit = americanProfit(stake, odds);
-      const returnAmount = round2(stake + profit);
-
-      state.pendingBet = {
-        id: (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : `bet-${Date.now()}`,
-        stake,
-        odds,
-        note: betLabel,
-        profit,
-        returnAmount
-      };
-
-      saveState();
+    function hardReset() {
+      state.start = 0;
+      state.bankroll = 0;
+      state.goal = 0;
+      state.multiplier = DEFAULT_MULTIPLIER;
+      state.legNumber = 0;
+      state.bets = [];
+      state.pending = null;
+      state.step = 1;
+      state.hasRunStarted = false;
+      state.bust = false;
+      localStorage.removeItem(state.storageKey);
       render();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
-    function gradePendingBet(result) {
-      if (!state.pendingBet) return;
-
-      const completed = {
-        ...state.pendingBet,
-        result,
-        cashoutAmount: result === 'cashout' ? state.pendingBet.stake : undefined,
-        settledAt: new Date().toISOString()
-      };
-
-      state.bets.push(completed);
-      clearBetInputs();
-      saveState();
-      render();
-      postGradeChecks();
+    function isValidBet(entry) {
+      if (!entry || typeof entry !== 'object') return false;
+      if (typeof entry.type !== 'string') return false;
+      if (typeof entry.summary !== 'string') return false;
+      return true;
     }
 
-    function cashOutRun() {
-      if (!state.pendingBet) return;
-
-      const input = prompt('Enter cash out amount', String(state.pendingBet.stake));
-      if (input === null) return;
-
-      const amount = round2(Number(input));
-      if (!Number.isFinite(amount) || amount < 0) return;
-
-      const start = getStartingBankroll();
-      const current = getCurrentBankroll();
-      const projectedBankroll = round2(current + (amount - state.pendingBet.stake));
-      const projectedProfit = round2(projectedBankroll - start);
-      const goal = getTargetBankroll();
-
-      state.bets.push({
-        ...state.pendingBet,
-        result: 'cashout',
-        cashoutAmount: amount,
-        settledAt: new Date().toISOString()
-      });
-
-      clearBetInputs();
-      saveState();
-      render();
-
-      if (projectedProfit > 0 && projectedBankroll < goal) {
-        showModal('Profit secured', `You ended the run before the goal, but still locked in profit. Current bankroll: ${formatMoney(projectedBankroll)}.`, [
-          { label: 'Nice', primary: true, onClick: () => {} }
-        ]);
-      }
-
-      postGradeChecks();
+    function isValidPending(pending) {
+      if (!pending || typeof pending !== 'object') return false;
+      if (!Number.isFinite(Number(pending.legNumber))) return false;
+      if (!Number.isFinite(Number(pending.bankrollBefore))) return false;
+      if (!Number.isFinite(Number(pending.odds))) return false;
+      if (typeof pending.note !== 'string') return false;
+      if (!Number.isFinite(Number(pending.profit))) return false;
+      if (!Number.isFinite(Number(pending.nextBankroll))) return false;
+      return true;
     }
 
-    function postGradeChecks() {
-      const current = getCurrentBankroll();
-      const goal = getTargetBankroll();
-
-      if (!state.shownGoal && goal > 0 && current >= goal) {
-        state.shownGoal = true;
-        saveState();
-        showModal('Goal hit', `Your bankroll reached ${formatMoney(current)} and cleared the goal of ${formatMoney(goal)}.`, [
-          { label: 'Keep Reviewing', primary: true, onClick: () => {} },
-          { label: 'Start New Run', primary: false, onClick: restartRun }
-        ]);
-        return;
-      }
-
-      if (!state.shownBusted && state.bets.length > 0 && current <= 0) {
-        state.shownBusted = true;
-        saveState();
-        showModal('Win some lose some', `Bankroll is at ${formatMoney(current)}. This run is over. Reset and start a new one.`, [
-          { label: 'Restart Run', primary: true, onClick: restartRun }
-        ]);
-      }
+    function isValidState(data) {
+      if (!data || typeof data !== 'object') return false;
+      if (!Number.isFinite(Number(data.start)) || Number(data.start) < 0) return false;
+      if (!Number.isFinite(Number(data.bankroll)) || Number(data.bankroll) < 0) return false;
+      if (!Number.isFinite(Number(data.goal)) || Number(data.goal) < 0) return false;
+      if (![5, 10, 25, 50].includes(Number(data.multiplier))) return false;
+      if (!Number.isFinite(Number(data.legNumber)) || Number(data.legNumber) < 0) return false;
+      if (![1, 2, 3, 4].includes(Number(data.step))) return false;
+      if (!Array.isArray(data.bets) || !data.bets.every(isValidBet)) return false;
+      if (data.pending !== null && data.pending !== undefined && !isValidPending(data.pending)) return false;
+      if (typeof data.hasRunStarted !== 'boolean') return false;
+      if (typeof data.bust !== 'boolean') return false;
+      return true;
     }
 
-    function renderHistory() {
-      els.historyList.innerHTML = '';
-      els.historyCount.textContent = `${state.bets.length} ${state.bets.length === 1 ? 'play' : 'plays'}`;
-
-      if (state.bets.length === 0) {
-        const empty = document.createElement('div');
-        empty.className = 'rounded-2xl border border-dashed border-white/10 p-6 text-slate-500 text-sm';
-        empty.textContent = 'No plays graded yet.';
-        els.historyList.appendChild(empty);
-        return;
-      }
-
-      state.bets.forEach((bet, idx) => {
-        const item = document.createElement('div');
-        item.className = 'rounded-2xl border border-white/10 bg-slate-950/25 p-4';
-
-        let detail = '';
-        if (bet.result === 'win') detail = `Return ${formatMoney(bet.returnAmount)} · Profit ${formatMoney(bet.profit)}`;
-        if (bet.result === 'loss') detail = `Lost stake ${formatMoney(bet.stake)}`;
-        if (bet.result === 'cashout') detail = `Cash out amount ${formatMoney(bet.cashoutAmount)} · Net ${formatMoney(bet.cashoutAmount - bet.stake)}`;
-
-        item.innerHTML = `
-          <div class="flex flex-wrap items-start justify-between gap-3">
-            <div class="min-w-0">
-              <div class="font-semibold text-white">Leg ${idx + 1}</div>
-              <div class="text-sm text-slate-400 break-words">${formatMoney(bet.stake)} · Odds ${formatOdds(bet.odds)}</div>
-            </div>
-            <span class="px-3 py-1 rounded-full text-sm border ${statusTone(bet.result)} shrink-0">${bet.result === 'cashout' ? 'Cash Out' : bet.result === 'win' ? 'Won' : 'Lost'}</span>
-          </div>
-          <div class="text-sm text-slate-300 mt-2 break-words">${detail}</div>
-          <div class="text-xs text-slate-500 mt-2 break-words">${bet.note}</div>
-        `;
-        els.historyList.appendChild(item);
-      });
+    function applyLoadedState(data) {
+      state.start = Number(data.start);
+      state.bankroll = Number(data.bankroll);
+      state.goal = Number(data.goal);
+      state.multiplier = Number(data.multiplier);
+      state.legNumber = Number(data.legNumber);
+      state.bets = data.bets;
+      state.pending = data.pending ?? null;
+      state.step = Number(data.step);
+      state.hasRunStarted = Boolean(data.hasRunStarted);
+      state.bust = Boolean(data.bust);
     }
 
-    function renderExportLog() {
-      els.exportLog.innerHTML = '';
-
-      if (state.bets.length === 0) {
-        const empty = document.createElement('div');
-        empty.className = 'text-sm text-slate-500';
-        empty.textContent = 'No bets logged yet.';
-        els.exportLog.appendChild(empty);
-        return;
-      }
-
-      state.bets.forEach((bet, idx) => {
-        const wrap = document.createElement('div');
-        wrap.className = 'rounded-2xl bg-white/5 p-4 border border-white/10';
-
-        let detail = '';
-        if (bet.result === 'win') detail = `Returned ${formatMoney(bet.returnAmount)} · Profit ${formatMoney(bet.profit)}`;
-        if (bet.result === 'loss') detail = `Lost ${formatMoney(bet.stake)}`;
-        if (bet.result === 'cashout') detail = `Cashed out for ${formatMoney(bet.cashoutAmount)} · Net ${formatMoney(bet.cashoutAmount - bet.stake)}`;
-
-        wrap.innerHTML = `
-          <div class="flex items-start justify-between gap-3">
-            <div class="min-w-0">
-              <div class="font-semibold text-white text-lg">Leg ${idx + 1}</div>
-              <div class="text-sm text-slate-400 break-words">Stake ${formatMoney(bet.stake)} · Odds ${formatOdds(bet.odds)}</div>
-            </div>
-            <span class="px-3 py-1 rounded-full text-sm border ${statusTone(bet.result)} shrink-0">${bet.result === 'cashout' ? 'Cash Out' : bet.result === 'win' ? 'Won' : 'Lost'}</span>
-          </div>
-          <div class="mt-3 text-sm text-slate-300 break-words">${detail}</div>
-          <div class="mt-2 text-xs text-slate-500 break-words">${bet.note}</div>
-        `;
-        els.exportLog.appendChild(wrap);
-      });
+    function getVisibleEntries() {
+      if (state.bets.length <= MAX_VISIBLE_ENTRIES) return state.bets;
+      const hiddenCount = state.bets.length - (MAX_VISIBLE_ENTRIES - 1);
+      return [
+        { type: 'compressed', summary: `+ ${hiddenCount} previous ${hiddenCount === 1 ? 'entry' : 'entries'}` },
+        ...state.bets.slice(-(MAX_VISIBLE_ENTRIES - 1))
+      ];
     }
 
-    function renderLockedBet() {
-      if (!state.pendingBet) {
-        els.lockedBetWrap.classList.add('hidden');
-        return;
-      }
-
-      els.lockedBetWrap.classList.remove('hidden');
-      els.lockedBetLine1.textContent = `Stake ${formatMoney(state.pendingBet.stake)} at ${formatOdds(state.pendingBet.odds)}`;
-      els.lockedBetLine2.textContent = `Potential return ${formatMoney(state.pendingBet.returnAmount)} · Profit ${formatMoney(state.pendingBet.profit)}`;
-      els.lockedBetNote.textContent = state.pendingBet.note;
-      els.lockedBetNote.classList.remove('hidden');
+    function appendSummary(type, summary) {
+      state.bets.push({ type, summary });
     }
 
-    function renderStepUI() {
-      const setupReady = hasValidSetup();
-      const currentBankroll = getCurrentBankroll();
-      const inGradeStep = Boolean(state.pendingBet);
-
-      if (!setupReady) {
-        els.setupWarning.classList.remove('hidden');
-        els.setupWarning.textContent = 'Enter a starting bankroll above $0 and set a goal greater than the starting bankroll to begin the ladder.';
-      } else if (currentBankroll <= 0) {
-        els.setupWarning.classList.remove('hidden');
-        els.setupWarning.textContent = 'This run is busted. Restart the run to begin again.';
-      } else {
-        els.setupWarning.classList.add('hidden');
-        els.setupWarning.textContent = '';
-      }
-
-      const inputsDisabled = !setupReady || inGradeStep || currentBankroll <= 0;
-      els.betStake.disabled = inputsDisabled;
-      els.betOdds.disabled = inputsDisabled;
-      els.betNote.disabled = inputsDisabled;
-
-      const stake = Number(els.betStake.value);
-      const odds = parseAmericanOdds(els.betOdds.value);
-      const betLabel = els.betNote.value.trim();
-
-      const canLock =
-        setupReady &&
-        !inGradeStep &&
-        currentBankroll > 0 &&
-        Number.isFinite(stake) &&
-        stake > 0 &&
-        Number.isFinite(odds) &&
-        odds !== 0 &&
-        stake <= currentBankroll &&
-        betLabel.length > 0;
-
-      els.lockBtn.disabled = !canLock;
-      els.wonBtn.disabled = !inGradeStep;
-      els.lostBtn.disabled = !inGradeStep;
-      els.cashoutBtn.disabled = !inGradeStep;
-
-      if (inGradeStep) {
-        els.stepBadge.textContent = 'Step 2 · Grade Result';
-        els.stepBadge.className = 'inline-flex mt-1 px-3 py-1 rounded-full text-xs border bg-white text-slate-950 border-white font-semibold';
-        els.stepHint.textContent = 'Your play is locked. Grade it before moving to the next leg.';
-      } else {
-        els.stepBadge.textContent = 'Step 1 · Lock Play';
-        els.stepBadge.className = 'inline-flex mt-1 px-3 py-1 rounded-full text-xs border bg-sky-500 text-slate-950 border-sky-400 font-semibold';
-        els.stepHint.textContent = setupReady ? 'Lock your next play to continue the ladder.' : 'Complete the bankroll and goal fields to begin.';
-      }
+    function scrollToBottom() {
+      setTimeout(() => {
+        window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+      }, 120);
     }
 
     function render() {
-      const start = getStartingBankroll();
-      const current = getCurrentBankroll();
-      const goal = getTargetBankroll();
-      const progress = getProgress(current, start, goal);
-      const totalProfit = round2(current - start);
-      const nextPlay = nextPlayLabel();
+      const progress = getProgressPct();
+      const totalProfit = round2(state.bankroll - state.start);
 
-      els.currentBankrollDisplay.textContent = formatMoney(current);
-      els.goalDisplay.textContent = formatMoney(goal);
-      els.nextPlaySummary.textContent = nextPlay;
+      els.currentBankrollDisplay.textContent = formatMoney(state.bankroll);
+      els.goalDisplay.textContent = formatMoney(state.goal);
       els.progressLabel.textContent = `${progress.toFixed(0)}%`;
       els.progressBar.style.width = `${progress}%`;
 
-      els.totalProfitDisplay.textContent = `${totalProfit >= 0 ? '+' : ''}${formatMoney(totalProfit)}`;
-      els.totalProfitDisplay.className = `text-lg md:text-xl font-bold mt-1 break-words ${totalProfit >= 0 ? 'text-emerald-300' : 'text-rose-300'}`;
+      els.totalProfitDisplay.textContent = formatMoneySigned(totalProfit);
+      els.totalProfitDisplay.className = `text-lg md:text-xl font-bold mt-1 break-words ${totalProfit > 0 ? 'text-emerald-300' : totalProfit < 0 ? 'text-rose-300' : 'text-slate-200'}`;
 
-      els.exportRunName.textContent = els.runName.value || 'Current Run';
-      els.exportStart.textContent = formatMoney(start);
-      els.exportNow.textContent = formatMoney(current);
-      els.exportGoal.textContent = formatMoney(goal);
-      els.exportProgressLabel.textContent = `${progress.toFixed(0)}%`;
-      els.exportProgressBar.style.width = `${progress}%`;
+      if (!state.hasRunStarted) {
+        els.statusSummary.textContent = 'Start your run';
+        els.stepBadge.textContent = 'Step 1 · Start Run';
+        els.stepBadge.className = 'inline-flex mt-1 px-3 py-1 rounded-full text-xs border bg-sky-500 text-slate-950 border-sky-400 font-semibold';
+        els.stepHint.textContent = 'Step 1: Set your starting bankroll and multiplier.';
+      } else if (state.bust) {
+        els.statusSummary.textContent = 'Run busted';
+        els.stepBadge.textContent = 'Run Over';
+        els.stepBadge.className = 'inline-flex mt-1 px-3 py-1 rounded-full text-xs border bg-white text-slate-950 border-white font-semibold';
+        els.stepHint.textContent = 'This ladder is over. Reset to start a new one.';
+      } else if (state.step === 2) {
+        els.statusSummary.textContent = `Leg ${state.legNumber + 1} loading`;
+        els.stepBadge.textContent = 'Step 2 · Enter Leg';
+        els.stepBadge.className = 'inline-flex mt-1 px-3 py-1 rounded-full text-xs border bg-sky-500 text-slate-950 border-sky-400 font-semibold';
+        els.stepHint.textContent = 'Enter odds and the bet name. The full bankroll rolls automatically.';
+      } else if (state.step === 3) {
+        els.statusSummary.textContent = `Leg ${state.pending?.legNumber ?? state.legNumber} locked`;
+        els.stepBadge.textContent = 'Step 3 · Grade Result';
+        els.stepBadge.className = 'inline-flex mt-1 px-3 py-1 rounded-full text-xs border bg-white text-slate-950 border-white font-semibold';
+        els.stepHint.textContent = 'Grade the locked leg before moving forward.';
+      } else {
+        els.statusSummary.textContent = state.bankroll >= state.goal && state.goal > 0 ? 'Goal hit' : `Leg ${state.legNumber} settled`;
+        els.stepBadge.textContent = state.bankroll >= state.goal && state.goal > 0 ? 'Goal Hit' : 'Step 4 · Review';
+        els.stepBadge.className = 'inline-flex mt-1 px-3 py-1 rounded-full text-xs border bg-emerald-400 text-slate-950 border-emerald-300 font-semibold';
+        els.stepHint.textContent = state.bankroll >= state.goal && state.goal > 0
+          ? 'You cleared the target. Share it or start a new one.'
+          : 'Review the result, share the run, then move to the next leg.';
+      }
 
-      els.exportPL.textContent = `${totalProfit >= 0 ? '+' : ''}${formatMoney(totalProfit)}`;
-      els.exportPL.className = `text-2xl font-bold text-right break-words ${totalProfit >= 0 ? 'text-emerald-300' : 'text-rose-300'}`;
-
-      els.exportNextPlay.textContent = nextPlay;
-
-      updateOddsPreview();
-      updateProfitPreview();
-      renderLockedBet();
-      renderHistory();
-      renderExportLog();
-      renderStepUI();
+      renderSteps();
+      renderShareCard();
+      els.dockShareBtn.disabled = state.bets.filter(b => b.type === 'result').length === 0;
     }
 
-    async function downloadShareCard() {
-      const previousText = els.downloadPngBtn.textContent;
-      els.downloadPngBtn.disabled = true;
-      els.downloadPngBtn.textContent = 'Rendering...';
+    function renderSteps() {
+      const visibleEntries = getVisibleEntries();
+      let html = '';
+
+      visibleEntries.forEach((entry, idx) => {
+        const tone = entry.type === 'setup'
+          ? 'text-sky-200'
+          : entry.type === 'bet'
+          ? 'text-white'
+          : entry.type === 'result-win'
+          ? 'text-emerald-200'
+          : entry.type === 'result-loss'
+          ? 'text-rose-200'
+          : 'text-slate-400';
+
+        html += `
+          <div class="glass-soft rounded-[18px] px-4 py-3 text-sm summary-enter">
+            <div class="${tone}">${entry.summary}</div>
+          </div>
+        `;
+      });
+
+      if (!state.hasRunStarted) {
+        html += renderSetupCard();
+      } else if (state.step === 2) {
+        html += renderEntryCard();
+      } else if (state.step === 3) {
+        html += renderGradeCard();
+      } else if (state.step === 4) {
+        html += renderResultCard();
+      }
+
+      els.stepsWrap.innerHTML = html;
+
+      bindStepEvents();
+    }
+
+    function renderSetupCard() {
+      return `
+        <div class="glass-soft rounded-[20px] p-4 space-y-4" id="setupCard">
+          <div class="text-base font-semibold">Start Run</div>
+          <div>
+            <label class="block text-sm font-medium mb-2 text-slate-300">Starting bankroll</label>
+            <input id="startInput" type="number" inputmode="decimal" min="0" step="0.01" placeholder="10" class="w-full h-12 rounded-2xl border border-white/10 bg-slate-950/50 px-4 text-white placeholder:text-slate-500" />
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-2 text-slate-300">Goal multiplier</label>
+            <div class="grid grid-cols-4 gap-2">
+              ${[5, 10, 25, 50].map(m => `
+                <button
+                  type="button"
+                  class="multBtn h-11 rounded-2xl border font-semibold ${m === state.multiplier ? 'bg-sky-500 text-slate-950 border-sky-400' : 'border-white/10 bg-white/5 text-white hover:bg-white/10'}"
+                  data-m="${m}"
+                >
+                  ${m}x
+                </button>
+              `).join('')}
+            </div>
+          </div>
+          <div class="text-xs text-slate-400">This is a true ladder. Every leg rolls the full bankroll.</div>
+          <button id="startRunBtn" class="w-full h-12 rounded-2xl bg-sky-500 text-slate-950 font-semibold hover:bg-sky-400">
+            Start Run
+          </button>
+        </div>
+      `;
+    }
+
+    function renderEntryCard() {
+      const currentRoll = state.bankroll;
+      return `
+        <div class="glass-soft rounded-[20px] p-4 space-y-4" id="entryCard">
+          <div class="flex items-center justify-between gap-3">
+            <div>
+              <div class="text-base font-semibold">Leg ${state.legNumber + 1}</div>
+              <div class="text-xs text-slate-400 mt-1">Full roll stake: ${formatMoney(currentRoll)}</div>
+            </div>
+            <div class="text-right">
+              <div class="text-xs text-slate-400">Goal</div>
+              <div class="font-semibold">${formatMoney(state.goal)}</div>
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium mb-2 text-slate-300">American odds</label>
+            <input id="oddsInput" type="text" autocapitalize="off" autocomplete="off" autocorrect="off" spellcheck="false" placeholder="+150 or 150" class="w-full h-12 rounded-2xl border border-white/10 bg-slate-950/50 px-4 text-white placeholder:text-slate-500" />
+            <div id="oddsPreview" class="text-xs mt-2 text-slate-400">Enter odds like -140, +150, or 150.</div>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium mb-2 text-slate-300">Bet name or bet ID</label>
+            <input id="betNoteInput" placeholder="Bears ML, Bet ID 12345" class="w-full h-12 rounded-2xl border border-white/10 bg-slate-950/50 px-4 text-white placeholder:text-slate-500" />
+          </div>
+
+          <div id="previewWrap" class="hidden rounded-2xl border border-white/10 bg-slate-950/35 p-4">
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <div class="text-sm text-slate-400">Potential Profit</div>
+                <div id="previewProfit" class="text-lg font-semibold text-emerald-300 mt-1">$0.00</div>
+              </div>
+              <div>
+                <div class="text-sm text-slate-400">Next Bankroll</div>
+                <div id="previewNext" class="text-lg font-bold text-white mt-1">$0.00</div>
+              </div>
+            </div>
+          </div>
+
+          <button id="lockLegBtn" class="w-full h-12 rounded-2xl bg-sky-500 text-slate-950 font-semibold hover:bg-sky-400">
+            Lock Leg
+          </button>
+        </div>
+      `;
+    }
+
+    function renderGradeCard() {
+      if (!state.pending) {
+        state.step = 2;
+        saveLocal();
+        return renderEntryCard();
+      }
+
+      return `
+        <div class="glass-soft rounded-[20px] p-4 space-y-4" id="gradeCard">
+          <div class="rounded-2xl border border-white/10 p-4 bg-slate-950/35">
+            <div class="font-semibold text-sky-200">Locked In</div>
+            <div class="text-sm text-slate-300 mt-1">${formatMoney(state.pending.bankrollBefore)} @ ${formatOdds(state.pending.odds)} — ${state.pending.note}</div>
+            <div class="text-sm text-slate-400 mt-1">Potential next bankroll ${formatMoney(state.pending.nextBankroll)}</div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-3">
+            <button id="wonBtn" class="h-12 rounded-2xl bg-emerald-400 text-slate-950 font-semibold hover:bg-emerald-300">
+              Won
+            </button>
+            <button id="lostBtn" class="h-12 rounded-2xl bg-white text-slate-950 font-semibold hover:bg-slate-200">
+              Lost
+            </button>
+          </div>
+
+          <div class="text-xs text-slate-400">A win rolls the full bankroll forward. A loss ends the run.</div>
+        </div>
+      `;
+    }
+
+    function renderResultCard() {
+      const progress = getProgressPct();
+      const hitGoal = state.goal > 0 && state.bankroll >= state.goal;
+      const busted = state.bust || state.bankroll <= 0;
+      const header = busted ? 'Run busted' : hitGoal ? 'Goal hit' : 'Leg settled';
+
+      return `
+        <div class="glass-soft rounded-[20px] p-4 space-y-4" id="resultCard">
+          <div class="flex items-center justify-between gap-3">
+            <div>
+              <div class="text-base font-semibold">${header}</div>
+              <div class="text-xs text-slate-400 mt-1">${busted ? 'This ladder is over.' : hitGoal ? 'You cleared the target.' : 'Ready for the next leg?'}</div>
+            </div>
+            <div class="text-right">
+              <div class="text-xs text-slate-400">Bankroll</div>
+              <div class="font-bold text-lg">${formatMoney(state.bankroll)}</div>
+            </div>
+          </div>
+
+          <div class="rounded-2xl bg-white/5 border border-white/10 p-4 space-y-2">
+            <div class="flex items-center justify-between text-sm">
+              <span class="text-slate-400">Progress</span>
+              <span class="font-medium text-white">${progress.toFixed(0)}%</span>
+            </div>
+            <div class="w-full h-3 bg-white/10 rounded-full overflow-hidden">
+              <div class="h-full rounded-full bg-gradient-to-r from-sky-400 to-violet-400" style="width:${progress}%"></div>
+            </div>
+          </div>
+
+          <div class="rounded-2xl border border-white/10 bg-white/5 p-4 space-y-3">
+            <div class="flex items-center justify-between gap-3">
+              <div class="text-sm text-slate-400">Share your ladder</div>
+              <div class="text-xs text-slate-500">PNG</div>
+            </div>
+            <div class="text-sm text-slate-300">This card is built to share the run and pull people into the climb.</div>
+            <button id="shareProgressBtn" class="w-full h-11 rounded-2xl bg-sky-500 text-slate-950 font-semibold hover:bg-sky-400">
+              Share Your Ladder
+            </button>
+          </div>
+
+          <div class="pt-1">
+            ${buildSupportLink()}
+          </div>
+
+          ${busted
+            ? `<button id="startOverBtn" class="w-full h-12 rounded-2xl border border-white/15 bg-white/5 hover:bg-white/10 font-medium">Start Over</button>`
+            : `<button id="nextLegBtn" class="w-full h-12 rounded-2xl bg-sky-500 text-slate-950 font-semibold hover:bg-sky-400">Enter Next Leg</button>`
+          }
+        </div>
+      `;
+    }
+
+    function bindStepEvents() {
+      document.querySelectorAll('.multBtn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          state.multiplier = Number(btn.dataset.m);
+          render();
+        });
+      });
+
+      document.getElementById('startRunBtn')?.addEventListener('click', () => {
+        const startInput = document.getElementById('startInput');
+        const start = round2(Number(startInput.value));
+
+        if (!Number.isFinite(start) || start <= 0) {
+          showModal('Invalid bankroll', 'Enter a starting bankroll greater than $0.', [
+            { label: 'OK', primary: true, onClick: () => {} }
+          ]);
+          return;
+        }
+
+        state.start = start;
+        state.bankroll = start;
+        state.goal = round2(start * state.multiplier);
+        state.legNumber = 0;
+        state.bets = [];
+        state.pending = null;
+        state.step = 2;
+        state.hasRunStarted = true;
+        state.bust = false;
+
+        appendSummary('setup', `Start ${formatMoney(state.start)} → Goal ${formatMoney(state.goal)}`);
+        saveLocal();
+        render();
+        scrollToBottom();
+      });
+
+      const oddsInput = document.getElementById('oddsInput');
+      const noteInput = document.getElementById('betNoteInput');
+      const lockLegBtn = document.getElementById('lockLegBtn');
+
+      if (oddsInput && noteInput && lockLegBtn) {
+        const updateEntryPreview = () => {
+          const odds = parseAmericanOdds(oddsInput.value);
+          const note = noteInput.value.trim();
+          const previewWrap = document.getElementById('previewWrap');
+          const oddsPreview = document.getElementById('oddsPreview');
+          const previewProfit = document.getElementById('previewProfit');
+          const previewNext = document.getElementById('previewNext');
+
+          if (!oddsInput.value.trim()) {
+            oddsPreview.textContent = 'Enter odds like -140, +150, or 150.';
+            oddsPreview.className = 'text-xs mt-2 text-slate-400';
+          } else if (odds === null) {
+            oddsPreview.textContent = 'Invalid odds format.';
+            oddsPreview.className = 'text-xs mt-2 text-rose-300';
+          } else {
+            oddsPreview.textContent = `Using odds ${formatOdds(odds)}`;
+            oddsPreview.className = `text-xs mt-2 ${odds > 0 ? 'text-emerald-300' : 'text-rose-300'}`;
+          }
+
+          if (odds !== null) {
+            const dec = americanToDecimal(odds);
+            const nextBankroll = round2(state.bankroll * dec);
+            const profit = round2(nextBankroll - state.bankroll);
+            previewWrap.classList.remove('hidden');
+            previewProfit.textContent = formatMoney(profit);
+            previewNext.textContent = formatMoney(nextBankroll);
+          } else {
+            previewWrap.classList.add('hidden');
+          }
+
+          lockLegBtn.disabled = !(odds !== null && note.length > 0 && state.bankroll > 0);
+          lockLegBtn.classList.toggle('opacity-40', lockLegBtn.disabled);
+          lockLegBtn.classList.toggle('cursor-not-allowed', lockLegBtn.disabled);
+        };
+
+        oddsInput.addEventListener('input', (e) => {
+          let v = e.target.value;
+          v = v.replace(/\s+/g, '');
+          v = v.replace(/[^0-9+-]/g, '');
+
+          if (v.length > 1) {
+            v = v[0] + v.slice(1).replace(/[+-]/g, '');
+          }
+
+          if ((v.match(/[+-]/g) || []).length > 1) {
+            const first = v[0];
+            v = (first === '+' || first === '-') ? first + v.slice(1).replace(/[+-]/g, '') : v.replace(/[+-]/g, '');
+          }
+
+          if (/^[0-9]/.test(v)) {
+            v = v.replace(/[+-]/g, '');
+          }
+
+          e.target.value = v;
+          updateEntryPreview();
+        });
+
+        noteInput.addEventListener('input', updateEntryPreview);
+        updateEntryPreview();
+
+        lockLegBtn.addEventListener('click', () => {
+          const odds = parseAmericanOdds(oddsInput.value);
+          const note = noteInput.value.trim();
+
+          if (odds === null) {
+            showModal('Invalid odds', 'Enter American odds in a format like -235, +150, or 150.', [
+              { label: 'OK', primary: true, onClick: () => {} }
+            ]);
+            return;
+          }
+
+          if (!note) {
+            showModal('Bet name required', 'Enter the bet name or bet ID before locking the leg.', [
+              { label: 'OK', primary: true, onClick: () => {} }
+            ]);
+            return;
+          }
+
+          const dec = americanToDecimal(odds);
+          const nextBankroll = round2(state.bankroll * dec);
+          const profit = round2(nextBankroll - state.bankroll);
+
+          state.pending = {
+            id: self.crypto?.randomUUID?.() || `leg-${Date.now()}-${Math.floor(Math.random() * 100000)}`,
+            legNumber: state.legNumber + 1,
+            bankrollBefore: state.bankroll,
+            odds,
+            note,
+            profit,
+            nextBankroll
+          };
+
+          appendSummary('bet', `${formatMoney(state.pending.bankrollBefore)} @ ${formatOdds(state.pending.odds)} — ${state.pending.note}`);
+          state.step = 3;
+          saveLocal();
+          render();
+          scrollToBottom();
+        });
+      }
+
+      document.getElementById('wonBtn')?.addEventListener('click', () => {
+        if (!state.pending) return;
+
+        state.bankroll = state.pending.nextBankroll;
+        state.legNumber = state.pending.legNumber;
+        appendSummary('result-win', `${formatMoneySigned(state.pending.profit)} → ${formatMoney(state.bankroll)}`);
+        state.pending = null;
+        state.step = 4;
+        state.bust = false;
+
+        saveLocal();
+        render();
+        scrollToBottom();
+      });
+
+      document.getElementById('lostBtn')?.addEventListener('click', () => {
+        if (!state.pending) return;
+
+        const loss = state.pending.bankrollBefore;
+        state.bankroll = 0;
+        state.legNumber = state.pending.legNumber;
+        appendSummary('result-loss', `${formatMoneySigned(-loss)} → ${formatMoney(0)}`);
+        state.pending = null;
+        state.step = 4;
+        state.bust = true;
+
+        saveLocal();
+        render();
+        scrollToBottom();
+      });
+
+      document.getElementById('nextLegBtn')?.addEventListener('click', () => {
+        state.step = 2;
+        saveLocal();
+        render();
+        scrollToBottom();
+      });
+
+      document.getElementById('startOverBtn')?.addEventListener('click', () => {
+        showModal('Start over', 'This clears your current ladder and resets everything.', [
+          { label: 'Cancel', primary: false, onClick: () => {} },
+          { label: 'Start Over', primary: true, onClick: hardReset }
+        ]);
+      });
+
+      document.getElementById('shareProgressBtn')?.addEventListener('click', handleShare);
+    }
+
+    function renderShareCard() {
+      const progress = getProgressPct();
+      const resultSummaries = state.bets.filter(b => b.type === 'result-win' || b.type === 'result-loss').slice(-3);
+      const shareNextText = state.bust
+        ? 'Run over — reset and fire again'
+        : state.pending
+        ? `${formatMoney(state.pending.bankrollBefore)} @ ${formatOdds(state.pending.odds)} — ${state.pending.note}`
+        : `Leg ${state.legNumber + 1} loading...`;
+
+      els.shareMultiplierLabel.textContent = `${state.multiplier}x`;
+      els.shareHeadline.textContent = `${formatMoney(state.start)} → ${formatMoney(state.bankroll)}`;
+      els.shareStart.textContent = formatMoney(state.start);
+      els.shareNow.textContent = formatMoney(state.bankroll);
+      els.shareGoal.textContent = formatMoney(state.goal);
+      els.shareProgressLabel.textContent = `${progress.toFixed(0)}%`;
+      els.shareProgressBar.style.width = `${progress}%`;
+      els.shareNext.textContent = shareNextText;
+      els.shareHype.textContent = state.bust
+        ? `Busted on the run`
+        : state.goal > 0 && state.bankroll >= state.goal
+        ? `Target cleared. Who's next?`
+        : `Can this hit ${state.multiplier}x?`;
+
+      if (resultSummaries.length === 0) {
+        els.shareLastPlays.innerHTML = `<div class="text-sm text-slate-500">No settled legs yet.</div>`;
+      } else {
+        els.shareLastPlays.innerHTML = resultSummaries.map(entry => `
+          <div class="rounded-2xl bg-white/5 p-3 border border-white/10 text-base font-semibold">
+            ${entry.summary}
+          </div>
+        `).join('');
+      }
+    }
+
+    async function handleShare() {
+      if (state.bets.filter(b => b.type === 'result-win' || b.type === 'result-loss').length === 0) {
+        showToast('Start the run first');
+        return;
+      }
 
       try {
+        renderShareCard();
         const canvas = await html2canvas(els.shareCard, {
           backgroundColor: null,
-          scale: 2,
+          scale: window.innerWidth < 768 ? 1.5 : 2,
           useCORS: true,
           logging: false
         });
 
         const link = document.createElement('a');
-        link.download = `${(els.runName.value || 'ladder-run').toLowerCase().replace(/[^a-z0-9]+/g, '-')}-overview.png`;
+        link.download = `ladder-${state.multiplier}x.png`;
         link.href = canvas.toDataURL('image/png');
         link.click();
+        showToast('Shared');
       } catch (error) {
         console.error(error);
-        showModal('Export failed', 'The overview card could not be rendered. Refresh the page and try again.', [
+        showModal('Share failed', 'The share card could not be generated. Refresh and try again.', [
           { label: 'OK', primary: true, onClick: () => {} }
         ]);
-      } finally {
-        els.downloadPngBtn.disabled = false;
-        els.downloadPngBtn.textContent = previousText;
       }
     }
 
-    function exportRunToFile() {
+    function handleSave() {
       try {
-        const payload = getExportPayload();
+        saveLocal();
+        const payload = {
+          version: 1,
+          savedAt: new Date().toISOString(),
+          start: state.start,
+          bankroll: state.bankroll,
+          goal: state.goal,
+          multiplier: state.multiplier,
+          legNumber: state.legNumber,
+          bets: state.bets,
+          pending: state.pending,
+          step: state.step,
+          hasRunStarted: state.hasRunStarted,
+          bust: state.bust
+        };
+
         const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
         const url = URL.createObjectURL(blob);
         const link = document.createElement('a');
         link.href = url;
-        link.download = `${(els.runName.value || 'ladder-run').toLowerCase().replace(/[^a-z0-9]+/g, '-')}-save.json`;
+        link.download = `ladder-progress-${state.multiplier}x.json`;
         link.click();
         URL.revokeObjectURL(url);
+
+        showToast('Saved');
       } catch (error) {
         console.error(error);
-        showModal('Export failed', 'The run file could not be exported.', [
+        showModal('Save failed', 'Your progress could not be saved right now.', [
           { label: 'OK', primary: true, onClick: () => {} }
         ]);
       }
     }
 
-    async function importRunFromFile(event) {
+    async function handleLoad(event) {
       const file = event.target.files && event.target.files[0];
       if (!file) return;
 
@@ -923,27 +1000,18 @@
         const text = await file.text();
         const data = JSON.parse(text);
 
-        els.runName.value = data.runName ?? 'Road to 1K';
-        els.startingBankroll.value = data.startingBankroll ?? '10';
-        els.targetBankroll.value = data.targetBankroll ?? '1000';
-        els.betStake.value = data.betStake ?? '';
-        els.betOdds.value = data.betOdds ?? '';
-        els.betNote.value = data.betNote ?? '';
+        if (!isValidState(data)) {
+          throw new Error('Invalid save file');
+        }
 
-        state.bets = Array.isArray(data.bets) ? data.bets : [];
-        state.pendingBet = data.pendingBet || null;
-        state.shownGoal = Boolean(data.shownGoal);
-        state.shownBusted = Boolean(data.shownBusted);
-
-        saveState();
+        applyLoadedState(data);
+        saveLocal();
         render();
-
-        showModal('Run imported', 'Your saved run was loaded successfully.', [
-          { label: 'OK', primary: true, onClick: () => {} }
-        ]);
+        showToast('Loaded');
+        scrollToBottom();
       } catch (error) {
         console.error(error);
-        showModal('Import failed', 'That file could not be imported. Make sure it is a valid ladder run save file.', [
+        showModal('Load failed', 'That file could not be loaded. Make sure it is a valid ladder save file.', [
           { label: 'OK', primary: true, onClick: () => {} }
         ]);
       } finally {
@@ -951,53 +1019,21 @@
       }
     }
 
-    els.betOdds.addEventListener('input', (e) => {
-      let v = e.target.value;
-      v = v.replace(/\s+/g, '');
-      v = v.replace(/[^0-9+-]/g, '');
-
-      if (v.length > 1) {
-        v = v[0] + v.slice(1).replace(/[+-]/g, '');
-      }
-
-      if ((v.match(/[+-]/g) || []).length > 1) {
-        const first = v[0];
-        v = (first === '+' || first === '-') ? first + v.slice(1).replace(/[+-]/g, '') : v.replace(/[+-]/g, '');
-      }
-
-      if (/^[0-9]/.test(v)) {
-        v = v.replace(/[+-]/g, '');
-      }
-
-      e.target.value = v;
-      saveState();
-      render();
+    els.dockShareBtn.addEventListener('click', handleShare);
+    els.dockSaveBtn.addEventListener('click', handleSave);
+    els.dockLoadInput.addEventListener('change', handleLoad);
+    els.dockResetBtn.addEventListener('click', () => {
+      showModal('Start over', 'This clears your current ladder and resets everything.', [
+        { label: 'Cancel', primary: false, onClick: () => {} },
+        { label: 'Start Over', primary: true, onClick: hardReset }
+      ]);
     });
 
-    els.lockBtn?.addEventListener('click', lockNextPlay);
-    els.wonBtn?.addEventListener('click', () => gradePendingBet('win'));
-    els.lostBtn?.addEventListener('click', () => gradePendingBet('loss'));
-    els.cashoutBtn?.addEventListener('click', cashOutRun);
-
-    document.getElementById('downloadPngBtn')?.addEventListener('click', downloadShareCard);
-    document.getElementById('dockDownloadBtn')?.addEventListener('click', downloadShareCard);
-
-    document.getElementById('dockExportBtn')?.addEventListener('click', exportRunToFile);
-    document.getElementById('dockImportInput')?.addEventListener('change', importRunFromFile);
-    document.getElementById('dockRestartBtn')?.addEventListener('click', restartRun);
-
-    [els.runName, els.startingBankroll, els.targetBankroll, els.betStake, els.betNote].forEach(el => {
-      el?.addEventListener('input', () => {
-        saveState();
-        render();
-      });
-    });
-
-    els.modalOverlay?.addEventListener('click', (e) => {
+    els.modalOverlay.addEventListener('click', (e) => {
       if (e.target === els.modalOverlay) hideModal();
     });
 
-    loadState();
+    loadLocal();
     render();
   </script>
 </body>
