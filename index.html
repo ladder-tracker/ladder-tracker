@@ -224,7 +224,7 @@
       step: 1,
       hasRunStarted: false,
       bust: false,
-      storageKey: 'ladder-tracker-true-ladder-v1'
+      storageKey: 'ladder-tracker-true-ladder-v3'
     };
 
     const els = {
@@ -500,7 +500,7 @@
         els.stepBadge.className = 'inline-flex mt-1 px-3 py-1 rounded-full text-xs border bg-white text-slate-950 border-white font-semibold';
         els.stepHint.textContent = 'Grade the locked leg before moving forward.';
       } else {
-        els.statusSummary.textContent = state.bankroll >= state.goal && state.goal > 0 ? 'Goal hit' : `Leg ${state.legNumber} settled`;
+        els.statusSummary.textContent = state.bankroll >= state.goal && state.goal > 0 ? 'Goal hit' : 'Leg settled';
         els.stepBadge.textContent = state.bankroll >= state.goal && state.goal > 0 ? 'Goal Hit' : 'Step 4 · Review';
         els.stepBadge.className = 'inline-flex mt-1 px-3 py-1 rounded-full text-xs border bg-emerald-400 text-slate-950 border-emerald-300 font-semibold';
         els.stepHint.textContent = state.bankroll >= state.goal && state.goal > 0
@@ -510,23 +510,23 @@
 
       renderSteps();
       renderShareCard();
-      els.dockShareBtn.disabled = state.bets.filter(b => b.type === 'result').length === 0;
+      els.dockShareBtn.disabled = state.bets.filter(b => b.type === 'result-win' || b.type === 'result-loss').length === 0;
     }
 
     function renderSteps() {
       const visibleEntries = getVisibleEntries();
       let html = '';
 
-      visibleEntries.forEach((entry, idx) => {
+      visibleEntries.forEach((entry) => {
         const tone = entry.type === 'setup'
           ? 'text-sky-200'
           : entry.type === 'bet'
           ? 'text-white'
           : entry.type === 'result-win'
-          ? 'text-emerald-200'
-          : entry.type === 'result-loss'
-          ? 'text-rose-200'
-          : 'text-slate-400';
+            ? 'text-emerald-200'
+            : entry.type === 'result-loss'
+              ? 'text-rose-200'
+              : 'text-slate-400';
 
         html += `
           <div class="glass-soft rounded-[18px] px-4 py-3 text-sm summary-enter">
@@ -546,7 +546,6 @@
       }
 
       els.stepsWrap.innerHTML = html;
-
       bindStepEvents();
     }
 
@@ -659,22 +658,44 @@
       const progress = getProgressPct();
       const hitGoal = state.goal > 0 && state.bankroll >= state.goal;
       const busted = state.bust || state.bankroll <= 0;
-      const header = busted ? 'Run busted' : hitGoal ? 'Goal hit' : 'Leg settled';
+      const lastResult = [...state.bets].reverse().find(entry => entry.type === 'result-win' || entry.type === 'result-loss');
+      const lastThree = state.bets.filter(entry => entry.type === 'result-win' || entry.type === 'result-loss').slice(-3);
+
+      let title = 'Leg settled';
+      let amount = '';
+      let subtitle = `Bankroll now ${formatMoney(state.bankroll)}`;
+
+      if (busted) {
+        title = 'Run Busted';
+        amount = lastResult ? lastResult.summary.split(' → ')[0] : formatMoneySigned(-state.start);
+      } else if (hitGoal) {
+        title = 'Goal Hit';
+        amount = lastResult ? lastResult.summary.split(' → ')[0] : formatMoneySigned(state.bankroll - state.start);
+      } else {
+        title = `Leg ${state.legNumber} Won`;
+        amount = lastResult ? lastResult.summary.split(' → ')[0] : '';
+      }
 
       return `
         <div class="glass-soft rounded-[20px] p-4 space-y-4" id="resultCard">
-          <div class="flex items-center justify-between gap-3">
-            <div>
-              <div class="text-base font-semibold">${header}</div>
-              <div class="text-xs text-slate-400 mt-1">${busted ? 'This ladder is over.' : hitGoal ? 'You cleared the target.' : 'Ready for the next leg?'}</div>
-            </div>
-            <div class="text-right">
-              <div class="text-xs text-slate-400">Bankroll</div>
-              <div class="font-bold text-lg">${formatMoney(state.bankroll)}</div>
+          <div class="rounded-2xl border border-white/10 bg-white/5 p-4">
+            <div class="text-sm text-slate-400">${title}</div>
+            <div class="text-4xl font-black mt-2 ${busted ? 'text-rose-300' : 'text-emerald-300'}">${amount}</div>
+            <div class="text-sm text-slate-300 mt-2">${subtitle}</div>
+          </div>
+
+          <div class="rounded-2xl border border-white/10 bg-white/5 p-4">
+            <div class="text-sm text-slate-400 mb-3">Momentum</div>
+            <div class="flex flex-col gap-2">
+              ${lastThree.map(entry => `
+                <div class="text-sm font-semibold ${entry.type === 'result-win' ? 'text-emerald-200' : 'text-rose-200'}">
+                  ${entry.summary}
+                </div>
+              `).join('')}
             </div>
           </div>
 
-          <div class="rounded-2xl bg-white/5 border border-white/10 p-4 space-y-2">
+          <div class="rounded-2xl border border-white/10 bg-white/5 p-4 space-y-2">
             <div class="flex items-center justify-between text-sm">
               <span class="text-slate-400">Progress</span>
               <span class="font-medium text-white">${progress.toFixed(0)}%</span>
@@ -686,12 +707,12 @@
 
           <div class="rounded-2xl border border-white/10 bg-white/5 p-4 space-y-3">
             <div class="flex items-center justify-between gap-3">
-              <div class="text-sm text-slate-400">Share your ladder</div>
+              <div class="text-sm text-slate-400">Share the Climb</div>
               <div class="text-xs text-slate-500">PNG</div>
             </div>
-            <div class="text-sm text-slate-300">This card is built to share the run and pull people into the climb.</div>
+            <div class="text-sm text-slate-300">Show the run. Build the hype.</div>
             <button id="shareProgressBtn" class="w-full h-11 rounded-2xl bg-sky-500 text-slate-950 font-semibold hover:bg-sky-400">
-              Share Your Ladder
+              Share the Climb
             </button>
           </div>
 
@@ -701,7 +722,7 @@
 
           ${busted
             ? `<button id="startOverBtn" class="w-full h-12 rounded-2xl border border-white/15 bg-white/5 hover:bg-white/10 font-medium">Start Over</button>`
-            : `<button id="nextLegBtn" class="w-full h-12 rounded-2xl bg-sky-500 text-slate-950 font-semibold hover:bg-sky-400">Enter Next Leg</button>`
+            : `<button id="nextLegBtn" class="w-full h-12 rounded-2xl bg-sky-500 text-slate-950 font-semibold hover:bg-sky-400">Next Leg</button>`
           }
         </div>
       `;
@@ -901,8 +922,8 @@
       const shareNextText = state.bust
         ? 'Run over — reset and fire again'
         : state.pending
-        ? `${formatMoney(state.pending.bankrollBefore)} @ ${formatOdds(state.pending.odds)} — ${state.pending.note}`
-        : `Leg ${state.legNumber + 1} loading...`;
+          ? `${formatMoney(state.pending.bankrollBefore)} @ ${formatOdds(state.pending.odds)} — ${state.pending.note}`
+          : `Leg ${state.legNumber + 1} loading...`;
 
       els.shareMultiplierLabel.textContent = `${state.multiplier}x`;
       els.shareHeadline.textContent = `${formatMoney(state.start)} → ${formatMoney(state.bankroll)}`;
@@ -913,10 +934,10 @@
       els.shareProgressBar.style.width = `${progress}%`;
       els.shareNext.textContent = shareNextText;
       els.shareHype.textContent = state.bust
-        ? `Busted on the run`
+        ? 'Busted on the run'
         : state.goal > 0 && state.bankroll >= state.goal
-        ? `Target cleared. Who's next?`
-        : `Can this hit ${state.multiplier}x?`;
+          ? "Target cleared. Who's next?"
+          : `Can this hit ${state.multiplier}x?`;
 
       if (resultSummaries.length === 0) {
         els.shareLastPlays.innerHTML = `<div class="text-sm text-slate-500">No settled legs yet.</div>`;
