@@ -177,388 +177,494 @@
       </main>
     </div>
   </div>
-  <script>
-    const sports = ["NFL", "NBA", "MLB", "NHL"];
-    const players = {
-      NFL: ["Rookie QB", "Star WR", "Elite Edge Rusher", "Franchise RB"],
-      NBA: ["Rookie Phenom", "All-Star Guard", "MVP Center", "High-Flying Wing"],
-      MLB: ["Power Hitter", "Ace Pitcher", "Rookie Shortstop", "Gold Glove Outfielder"],
-      NHL: ["Rookie Skater", "Star Goalie", "Elite Center", "Power Play Defenseman"]
-    };
-    const rarityRank = {
-      Common: 1,
-      Uncommon: 2,
-      Rare: 3,
-      "Ultra Rare": 4,
-      Grail: 5
-    };
-    let game = {
-      day: 1,
-      cash: 500,
-      rep: 10,
-      followers: 0,
-      packs: 3,
-      inventory: []
-    };
-    let grails = {
-      NFL: { name: "NFL Shield Rookie Auto", target: 25000, owned: false },
-      NBA: { name: "NBA Gold Rookie Auto", target: 30000, owned: false },
-      MLB: { name: "MLB Superfractor Rookie Auto", target: 20000, owned: false },
-      NHL: { name: "NHL Young Guns Clear Cut Auto", target: 18000, owned: false },
-      QUAD: { name: "Four-Sport Quad Auto", target: 100000, owned: false }
-    };
-    function money(num) {
-      return "$" + Math.round(num).toLocaleString();
+  Replace your current <script> section with this upgraded version.
+
+This version adds:
+
+* Energy/stamina system
+* Different live/private ripping balance
+* Bulk junk sell
+* Permanent grail collection cards
+* Better trading
+* Interactive inventory
+* Collector vs breaker gameplay direction
+* Market updates
+* Safer economy flow
+
+<script>
+const sports = ["NFL", "NBA", "MLB", "NHL"];
+const players = {
+  NFL: ["Rookie QB", "Star WR", "Elite Edge Rusher", "Franchise RB"],
+  NBA: ["Rookie Phenom", "All-Star Guard", "MVP Center", "High-Flying Wing"],
+  MLB: ["Power Hitter", "Ace Pitcher", "Rookie Shortstop", "Gold Glove Outfielder"],
+  NHL: ["Rookie Skater", "Star Goalie", "Elite Center", "Power Play Defenseman"]
+};
+const rarityRank = {
+  Common: 1,
+  Uncommon: 2,
+  Rare: 3,
+  "Ultra Rare": 4,
+  Grail: 5
+};
+let game = {
+  day: 1,
+  cash: 500,
+  rep: 10,
+  followers: 0,
+  packs: 3,
+  energy: 10,
+  maxEnergy: 10,
+  inventory: []
+};
+let grails = {
+  NFL: { name: "NFL Shield Rookie Auto", target: 25000, owned: false },
+  NBA: { name: "NBA Gold Rookie Auto", target: 30000, owned: false },
+  MLB: { name: "MLB Superfractor Rookie Auto", target: 20000, owned: false },
+  NHL: { name: "NHL Young Guns Clear Cut Auto", target: 18000, owned: false },
+  QUAD: { name: "Four-Sport Quad Auto", target: 100000, owned: false }
+};
+function money(num) {
+  return "$" + Math.round(num).toLocaleString();
+}
+function rand(min, max) {
+  min = Math.ceil(min);
+  max = Math.floor(max);
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+function pick(arr) {
+  return arr[Math.floor(Math.random() * arr.length)];
+}
+function log(msg) {
+  const box = document.getElementById("log");
+  box.innerHTML = `<p>${msg}</p>` + box.innerHTML;
+}
+function collectionValue() {
+  return game.inventory.reduce((sum, card) => sum + card.value, 0);
+}
+function spendEnergy(amount) {
+  if (game.energy < amount) {
+    log("You are exhausted. End the day to sleep and recover.");
+    return false;
+  }
+  game.energy -= amount;
+  return true;
+}
+function generateCard(stream = false) {
+  const sport = pick(sports);
+  const roll = rand(1, 1000);
+  let rarity;
+  let value;
+  if (roll <= 2) {
+    rarity = "Grail";
+    value = rand(18000, 100000);
+  } else if (roll <= 20) {
+    rarity = "Ultra Rare";
+    value = rand(1500, 10000);
+  } else if (roll <= 100) {
+    rarity = "Rare";
+    value = rand(250, 1500);
+  } else if (roll <= 350) {
+    rarity = "Uncommon";
+    value = rand(40, 250);
+  } else {
+    rarity = "Common";
+    value = rand(2, 40);
+  }
+  if (stream && rarityRank[rarity] >= 3) {
+    value *= 1.15;
+  }
+  return {
+    id: Date.now().toString() + Math.random().toString(16).slice(2),
+    sport,
+    name: `${sport} ${pick(players[sport])}`,
+    rarity,
+    value: Math.floor(value),
+    graded: false,
+    grade: null,
+    locked: false,
+    permanentLock: false
+  };
+}
+function checkGrail(card) {
+  if (card.rarity !== "Grail") return;
+  if (grails[card.sport] && !grails[card.sport].owned) {
+    grails[card.sport].owned = true;
+    log(`<strong>GRAIL ACQUIRED:</strong> ${grails[card.sport].name}`);
+  }
+  if (card.value >= 100000 && !grails.QUAD.owned) {
+    grails.QUAD.owned = true;
+    log(`<strong>LEGENDARY GRAIL ACQUIRED:</strong> Four-Sport Quad Auto`);
+  }
+}
+function buyPack() {
+  if (!spendEnergy(1)) return;
+  if (game.cash < 50) {
+    log("Not enough cash.");
+    return;
+  }
+  game.cash -= 50;
+  game.packs += 1;
+  log("You bought one sealed hobby pack for $50.");
+  render();
+}
+function openPack(stream) {
+  const energyCost = stream ? 3 : 1;
+  if (!spendEnergy(energyCost)) return;
+  if (game.packs <= 0) {
+    log("No sealed packs.");
+    return;
+  }
+  game.packs--;
+  const card = generateCard(stream);
+  game.inventory.push(card);
+  if (stream) {
+    game.followers += rand(5, 40);
+    game.rep += 1;
+    if (rarityRank[card.rarity] >= 3) {
+      const followers = rand(100, 1000);
+      game.followers += followers;
+      game.rep += 5;
+      log(`Huge stream hit. +${followers} followers.`);
+    } else {
+      game.rep -= 1;
+      log("Chat was not impressed.");
     }
-    function rand(min, max) {
-      min = Math.ceil(min);
-      max = Math.floor(max);
-      return Math.floor(Math.random() * (max - min + 1)) + min;
+  }
+  log(`You pulled <strong>${card.name}</strong> (${card.rarity}) worth ${money(card.value)}.`);
+  checkGrail(card);
+  render();
+}
+function gradeCard(id) {
+  if (!spendEnergy(1)) return;
+  const card = game.inventory.find(c => c.id === id);
+  if (!card) return;
+  if (card.graded) {
+    log("Card already graded.");
+    return;
+  }
+  if (game.cash < 25) {
+    log("Not enough cash to grade.");
+    return;
+  }
+  game.cash -= 25;
+  const roll = rand(1, 100);
+  let grade;
+  if (roll <= 10) grade = 6;
+  else if (roll <= 30) grade = 7;
+  else if (roll <= 65) grade = 8;
+  else if (roll <= 90) grade = 9;
+  else grade = 10;
+  card.graded = true;
+  card.grade = grade;
+  if (grade === 10) {
+    card.value *= 3;
+  } else if (grade === 9) {
+    card.value *= 1.8;
+  } else if (grade === 8) {
+    card.value *= 1.2;
+  } else {
+    card.value *= 0.75;
+  }
+  card.value = Math.floor(card.value);
+  log(`${card.name} received PSA ${grade}.`);
+  render();
+}
+function sellCard(id) {
+  if (!spendEnergy(1)) return;
+  const card = game.inventory.find(c => c.id === id);
+  if (!card) return;
+  if (card.locked || card.permanentLock) {
+    log("Locked cards cannot be sold.");
+    return;
+  }
+  const confirmSale = confirm(
+    `Sell ${card.name} for around ${money(card.value)}?`
+  );
+  if (!confirmSale) return;
+  const sale = rand(card.value * 0.85, card.value * 1.15);
+  game.cash += Math.floor(sale);
+  game.inventory = game.inventory.filter(c => c.id !== id);
+  log(`Sold ${card.name} for ${money(sale)}.`);
+  render();
+}
+function toggleLock(id) {
+  const card = game.inventory.find(c => c.id === id);
+  if (!card) return;
+  if (card.permanentLock) {
+    log("Grail cards cannot be unlocked.");
+    return;
+  }
+  card.locked = !card.locked;
+  if (card.locked) {
+    log(`${card.name} added to your personal collection.`);
+  } else {
+    log(`${card.name} removed from your personal collection.`);
+  }
+  render();
+}
+function sellJunk() {
+  if (!spendEnergy(1)) return;
+  const junk = game.inventory.filter(card =>
+    !card.locked &&
+    !card.permanentLock &&
+    rarityRank[card.rarity] <= rarityRank.Uncommon
+  );
+  if (!junk.length) {
+    log("No unlocked Common/Uncommon cards.");
+    return;
+  }
+  const total = junk.reduce(
+    (sum, card) => sum + Math.floor(card.value * 0.9),
+    0
+  );
+  game.inventory = game.inventory.filter(card =>
+    card.locked ||
+    card.permanentLock ||
+    rarityRank[card.rarity] >= rarityRank.Rare
+  );
+  game.cash += total;
+  log(`Bulk sold ${junk.length} junk cards for ${money(total)}.`);
+  render();
+}
+function buyGrail() {
+  if (!spendEnergy(2)) return;
+  const available = Object.entries(grails).filter(
+    ([_, grail]) => !grail.owned
+  );
+  if (!available.length) {
+    log("All grails owned.");
+    return;
+  }
+  const text = available.map(([key, grail], index) =>
+    `${index + 1}. ${key} - ${grail.name} - ${money(grail.target)}`
+  ).join("\n");
+  const input = prompt(
+    `Available Grail Cards:\n\n${text}\n\nEnter the number you want to buy:`
+  );
+  if (!input) return;
+  const selected = available[Number(input) - 1];
+  if (!selected) {
+    log("Invalid grail selection.");
+    return;
+  }
+  const [key, grail] = selected;
+  if (game.cash < grail.target) {
+    log(`Need ${money(grail.target)} cash.`);
+    return;
+  }
+  game.cash -= grail.target;
+  grail.owned = true;
+  const grailCard = {
+    id: Date.now().toString() + Math.random().toString(16).slice(2),
+    sport: key,
+    name: grail.name,
+    rarity: "Grail",
+    value: grail.target,
+    graded: true,
+    grade: 10,
+    locked: true,
+    permanentLock: true
+  };
+  game.inventory.push(grailCard);
+  log(`<strong>GRAIL PURCHASED:</strong> ${grail.name}`);
+  render();
+}
+function tradeCard() {
+  if (!spendEnergy(2)) return;
+  const collectors = [
+    {
+      name: "NBA Investor",
+      sport: "NBA",
+      minRarity: "Rare",
+      offer: "cash"
+    },
+    {
+      name: "NFL Slab Collector",
+      sport: "NFL",
+      minRarity: "Uncommon",
+      offer: "cash_packs"
+    },
+    {
+      name: "MLB Prospector",
+      sport: "MLB",
+      minRarity: "Rare",
+      offer: "card"
+    },
+    {
+      name: "NHL Diehard",
+      sport: "NHL",
+      minRarity: "Uncommon",
+      offer: "cash"
     }
-    function pick(arr) {
-      return arr[Math.floor(Math.random() * arr.length)];
-    }
-    function log(msg) {
-      const box = document.getElementById("log");
-      box.innerHTML = `<p>${msg}</p>` + box.innerHTML;
-    }
-    function collectionValue() {
-      return game.inventory.reduce((sum, card) => sum + card.value, 0);
-    }
-    function generateCard(stream = false) {
-      const sport = pick(sports);
-      const roll = rand(1, 1000);
-      let rarity;
-      let value;
-      if (roll <= 2) {
-        rarity = "Grail";
-        value = rand(18000, 100000);
-      } else if (roll <= 20) {
-        rarity = "Ultra Rare";
-        value = rand(1500, 10000);
-      } else if (roll <= 100) {
-        rarity = "Rare";
-        value = rand(250, 1500);
-      } else if (roll <= 350) {
-        rarity = "Uncommon";
-        value = rand(40, 250);
-      } else {
-        rarity = "Common";
-        value = rand(2, 40);
+  ];
+  const collector = pick(collectors);
+  const eligible = game.inventory.filter(card =>
+    !card.locked &&
+    !card.permanentLock &&
+    card.sport === collector.sport &&
+    rarityRank[card.rarity] >= rarityRank[collector.minRarity]
+  );
+  if (!eligible.length) {
+    log(`${collector.name} wants ${collector.sport} ${collector.minRarity}+ cards.`);
+    return;
+  }
+  const options = eligible.map((card, index) =>
+    `${index + 1}. ${card.name} (${card.rarity}) ${money(card.value)}`
+  ).join("\n");
+  const input = prompt(
+    `${collector.name} is looking for ${collector.sport} ${collector.minRarity}+ cards.\n\n${options}`
+  );
+  if (!input) return;
+  const card = eligible[Number(input) - 1];
+  if (!card) {
+    log("Invalid trade selection.");
+    return;
+  }
+  if (collector.offer === "cash") {
+    const payout = Math.floor(card.value * rand(110, 140) / 100);
+    game.cash += payout;
+    game.inventory = game.inventory.filter(c => c.id !== card.id);
+    log(`${collector.name} paid ${money(payout)} for ${card.name}.`);
+  }
+  if (collector.offer === "cash_packs") {
+    const payout = Math.floor(card.value * rand(90, 120) / 100);
+    game.cash += payout;
+    game.packs += 2;
+    game.inventory = game.inventory.filter(c => c.id !== card.id);
+    log(`${collector.name} traded ${money(payout)} + 2 packs for ${card.name}.`);
+  }
+  if (collector.offer === "card") {
+    const incoming = generateCard(false);
+    game.inventory = game.inventory.filter(c => c.id !== card.id);
+    game.inventory.push(incoming);
+    log(`${collector.name} traded ${incoming.name} for ${card.name}.`);
+    checkGrail(incoming);
+  }
+  game.rep++;
+  render();
+}
+function endDay() {
+  game.day += 1;
+  game.cash -= 20;
+  game.energy = game.maxEnergy;
+  log("You sleep and recover your energy.");
+  const events = [
+    ["NBA rookies are heating up.", "NBA", 1.15],
+    ["NFL market cooled off today.", "NFL", 0.90],
+    ["MLB prospects are trending.", "MLB", 1.10],
+    ["NHL collectors showed up strong.", "NHL", 1.10],
+    ["The market was flat today.", null, 1]
+  ];
+  const event = pick(events);
+  log(`<strong>Market Update:</strong> ${event[0]}`);
+  if (event[1]) {
+    game.inventory.forEach(card => {
+      if (card.sport === event[1]) {
+        card.value = Math.max(
+          1,
+          Math.floor(card.value * event[2])
+        );
       }
-      if (stream && rarityRank[rarity] >= 3) {
-        value *= 1.15;
-      }
-      return {
-        id: Date.now().toString() + Math.random().toString(16).slice(2),
-        sport,
-        name: `${sport} ${pick(players[sport])}`,
-        rarity,
-        value: Math.floor(value),
-        graded: false,
-        grade: null,
-        locked: false
-      };
-    }
-    function checkGrail(card) {
-      if (card.rarity !== "Grail") return;
-      if (grails[card.sport] && !grails[card.sport].owned) {
-        grails[card.sport].owned = true;
-        log(`<strong>GRAIL ACQUIRED:</strong> ${grails[card.sport].name}`);
-      }
-      if (card.value >= 100000 && !grails.QUAD.owned) {
-        grails.QUAD.owned = true;
-        log(`<strong>LEGENDARY GRAIL ACQUIRED:</strong> Four-Sport Quad Auto`);
-      }
-    }
-    function buyPack() {
-      if (game.cash < 50) {
-        log("Not enough cash.");
-        return;
-      }
-      game.cash -= 50;
-      game.packs += 1;
-      log("You bought one sealed pack for $50.");
-      render();
-    }
-    function openPack(stream) {
-      if (game.packs <= 0) {
-        log("No sealed packs.");
-        return;
-      }
-      game.packs -= 1;
-      const card = generateCard(stream);
-      game.inventory.push(card);
-      if (stream) {
-        game.followers += rand(5, 40);
-        game.rep += 1;
-        if (rarityRank[card.rarity] >= 3) {
-          const followers = rand(100, 1000);
-          game.followers += followers;
-          game.rep += 5;
-          log(`Huge stream hit. +${followers} followers.`);
-        } else {
-          game.rep -= 1;
-          log("Chat was not impressed.");
-        }
-      }
-      log(`You pulled <strong>${card.name}</strong> (${card.rarity}) worth ${money(card.value)}.`);
-      checkGrail(card);
-      render();
-    }
-    function gradeCard(id) {
-      const card = game.inventory.find(c => c.id === id);
-      if (!card) return;
-      if (card.graded) {
-        log("Card already graded.");
-        return;
-      }
-      if (game.cash < 25) {
-        log("Not enough cash to grade.");
-        return;
-      }
-      game.cash -= 25;
-      const roll = rand(1, 100);
-      let grade;
-      if (roll <= 10) grade = 6;
-      else if (roll <= 30) grade = 7;
-      else if (roll <= 65) grade = 8;
-      else if (roll <= 90) grade = 9;
-      else grade = 10;
-      card.graded = true;
-      card.grade = grade;
-      if (grade === 10) {
-        card.value *= 3;
-        log(`Gem Mint 10. ${card.name} tripled in value.`);
-      } else if (grade === 9) {
-        card.value *= 1.8;
-        log(`Mint 9. ${card.name} got a strong value bump.`);
-      } else if (grade === 8) {
-        card.value *= 1.2;
-        log(`Grade 8. ${card.name} got a small bump.`);
-      } else {
-        card.value *= 0.75;
-        log(`Bad grade. ${card.name} lost value.`);
-      }
-      card.value = Math.floor(card.value);
-      render();
-    }
-    function sellCard(id) {
-      const card = game.inventory.find(c => c.id === id);
-      if (!card) return;
-      if (card.locked) {
-        log("Locked PC cards cannot be sold.");
-        return;
-      }
-      const confirmSale = confirm(`Sell ${card.name} for around ${money(card.value)}?`);
-      if (!confirmSale) return;
-      const sale = rand(card.value * 0.85, card.value * 1.15);
-      game.cash += Math.floor(sale);
-      game.inventory = game.inventory.filter(c => c.id !== id);
-      log(`Sold ${card.name} for ${money(sale)}.`);
-      render();
-    }
-    function toggleLock(id) {
-      const card = game.inventory.find(c => c.id === id);
-      if (!card) return;
-      card.locked = !card.locked;
-      if (card.locked) {
-        log(`${card.name} added to your personal collection.`);
-      } else {
-        log(`${card.name} removed from personal collection.`);
-      }
-      render();
-    }
-    function buyGrail() {
-      const available = Object.entries(grails).filter(([_, grail]) => !grail.owned);
-      if (!available.length) {
-        log("All grails owned.");
-        return;
-      }
-      const text = available.map(([key, grail], index) =>
-        `${index + 1}. ${key} - ${grail.name} - ${money(grail.target)}`
-      ).join("\n");
-      const input = prompt(`Available Grail Cards:\n\n${text}\n\nEnter the number you want to buy:`);
-      if (!input) return;
-      const selected = available[Number(input) - 1];
-      if (!selected) {
-        log("Invalid grail selection.");
-        return;
-      }
-      const [key, grail] = selected;
-      if (game.cash < grail.target) {
-        log(`Need ${money(grail.target)} cash to buy ${key} grail.`);
-        return;
-      }
-      game.cash -= grail.target;
-      grail.owned = true;
-      log(`<strong>GRAIL PURCHASED:</strong> ${grail.name} for ${money(grail.target)}.`);
-      render();
-    }
-    function tradeCard() {
-      const collectors = [
-        {
-          name: "NBA Investor",
-          sport: "NBA",
-          minRarity: "Rare",
-          offer: "cash"
-        },
-        {
-          name: "NFL Slab Collector",
-          sport: "NFL",
-          minRarity: "Uncommon",
-          offer: "cash_packs"
-        },
-        {
-          name: "MLB Prospector",
-          sport: "MLB",
-          minRarity: "Rare",
-          offer: "card"
-        },
-        {
-          name: "NHL Diehard",
-          sport: "NHL",
-          minRarity: "Uncommon",
-          offer: "cash"
-        }
-      ];
-      const collector = pick(collectors);
-      const eligible = game.inventory.filter(card =>
-        !card.locked &&
-        card.sport === collector.sport &&
-        rarityRank[card.rarity] >= rarityRank[collector.minRarity]
-      );
-      if (!eligible.length) {
-        log(`${collector.name} is looking for ${collector.sport} ${collector.minRarity}+ cards, but you do not have any eligible unlocked cards.`);
-        return;
-      }
-      const options = eligible.map((card, index) =>
-        `${index + 1}. ${card.name} (${card.rarity}) ${money(card.value)}`
-      ).join("\n");
-      const input = prompt(
-        `${collector.name} is looking for ${collector.sport} ${collector.minRarity}+ cards.\n\nChoose a card to offer:\n\n${options}`
-      );
-      if (!input) return;
-      const card = eligible[Number(input) - 1];
-      if (!card) {
-        log("Invalid trade selection.");
-        return;
-      }
-      if (collector.offer === "cash") {
-        const payout = Math.floor(card.value * rand(110, 140) / 100);
-        game.cash += payout;
-        game.inventory = game.inventory.filter(c => c.id !== card.id);
-        game.rep += 1;
-        log(`${collector.name} paid ${money(payout)} for ${card.name}.`);
-      }
-      if (collector.offer === "cash_packs") {
-        const payout = Math.floor(card.value * rand(90, 120) / 100);
-        game.cash += payout;
-        game.packs += 2;
-        game.inventory = game.inventory.filter(c => c.id !== card.id);
-        game.rep += 1;
-        log(`${collector.name} traded ${money(payout)} + 2 sealed packs for ${card.name}.`);
-      }
-      if (collector.offer === "card") {
-        const incoming = generateCard(false);
-        game.inventory = game.inventory.filter(c => c.id !== card.id);
-        game.inventory.push(incoming);
-        game.rep += 1;
-        log(`${collector.name} traded ${incoming.name} (${incoming.rarity}, ${money(incoming.value)}) for ${card.name}.`);
-        checkGrail(incoming);
-      }
-      render();
-    }
-    function endDay() {
-      game.day += 1;
-      game.cash -= 20;
-      log("Convention day ended. -$20 expenses.");
-      const events = [
-        ["NBA rookies are heating up.", "NBA", 1.15],
-        ["NFL market cooled off today.", "NFL", 0.90],
-        ["MLB prospects are trending.", "MLB", 1.10],
-        ["NHL collectors showed up strong.", "NHL", 1.10],
-        ["The market was flat today.", null, 1]
-      ];
-      const event = pick(events);
-      log(`<strong>Market Update:</strong> ${event[0]}`);
-      if (event[1]) {
-        game.inventory.forEach(card => {
-          if (card.sport === event[1]) {
-            card.value = Math.max(1, Math.floor(card.value * event[2]));
-          }
-        });
-      }
-      render();
-    }
-    function render() {
-      document.getElementById("day").textContent = game.day;
-      document.getElementById("cash").textContent = money(game.cash);
-      document.getElementById("rep").textContent = game.rep;
-      document.getElementById("followers").textContent = game.followers.toLocaleString();
-      document.getElementById("packs").textContent = game.packs;
-      document.getElementById("collection").textContent = money(collectionValue());
-      const grailBox = document.getElementById("grails");
-      grailBox.innerHTML = "";
-      Object.entries(grails).forEach(([key, grail]) => {
-        grailBox.innerHTML += `
-          <div class="grail">
-            <strong>${key}</strong><br>
-            ${grail.name}<br>
-            Target: ${money(grail.target)}<br>
-            <span class="${grail.owned ? "owned" : "missing"}">
-              ${grail.owned ? "OWNED" : "MISSING"}
-            </span>
+    });
+  }
+  render();
+}
+function render() {
+  document.getElementById("day").textContent = game.day;
+  document.getElementById("cash").textContent = money(game.cash);
+  document.getElementById("rep").textContent = game.rep;
+  document.getElementById("followers").textContent = game.followers.toLocaleString();
+  document.getElementById("packs").textContent = game.packs;
+  document.getElementById("collection").textContent = money(collectionValue());
+  if (document.getElementById("energy")) {
+    document.getElementById("energy").textContent =
+      `${game.energy}/${game.maxEnergy}`;
+  }
+  const grailBox = document.getElementById("grails");
+  grailBox.innerHTML = "";
+  Object.entries(grails).forEach(([key, grail]) => {
+    grailBox.innerHTML += `
+      <div class="grail">
+        <strong>${key}</strong><br>
+        ${grail.name}<br>
+        ${money(grail.target)}<br>
+        <span class="${grail.owned ? "owned" : "missing"}">
+          ${grail.owned ? "OWNED" : "MISSING"}
+        </span>
+      </div>
+    `;
+  });
+  const inv = document.getElementById("inventory");
+  inv.innerHTML = "";
+  if (!game.inventory.length) {
+    inv.innerHTML = "<p>No cards yet.</p>";
+  }
+  game.inventory
+    .slice()
+    .sort((a, b) => b.value - a.value)
+    .forEach(card => {
+      inv.innerHTML += `
+        <div class="card ${card.rarity.split(" ")[0]}">
+          <span class="badge">${card.rarity}</span>
+          <h3>${card.name}</h3>
+          <div>${card.sport}</div>
+          <div>
+            ${card.graded ? `PSA ${card.grade}` : "Raw"}
           </div>
-        `;
-      });
-      const inv = document.getElementById("inventory");
-      inv.innerHTML = "";
-      if (!game.inventory.length) {
-        inv.innerHTML = "<p>No cards yet.</p>";
-      }
-      game.inventory
-        .slice()
-        .sort((a, b) => b.value - a.value)
-        .forEach(card => {
-          inv.innerHTML += `
-            <div class="card ${card.rarity.split(" ")[0]}">
-              <span class="badge">${card.rarity}</span>
-              <h3>${card.name}</h3>
-              <div>${card.sport}</div>
-              <div>${card.graded ? "PSA " + card.grade : "Raw Card"}</div>
-              ${card.locked ? `<div class="locked">Locked PC Hold</div>` : ""}
-              <div class="value">${money(card.value)}</div>
-              <div style="display:grid;gap:6px;margin-top:10px;">
-                <button onclick="gradeCard('${card.id}')">Grade - $25</button>
-                <button onclick="sellCard('${card.id}')" class="secondary">Sell</button>
-                <button onclick="toggleLock('${card.id}')" class="secondary">
-                  ${card.locked ? "Unlock" : "Lock PC"}
-                </button>
-              </div>
-            </div>
-          `;
-        });
-      localStorage.setItem("cardShowSave", JSON.stringify({ game, grails }));
-    }
-    function loadGame() {
-      const save = localStorage.getItem("cardShowSave");
-      if (!save) return;
-      const data = JSON.parse(save);
-      game = data.game;
-      grails = data.grails;
-      game.inventory.forEach(card => {
-        if (card.locked === undefined) card.locked = false;
-      });
-    }
-    function resetGame() {
-      if (!confirm("Reset your entire game? This cannot be undone.")) return;
-      localStorage.removeItem("cardShowSave");
-      location.reload();
-    }
-    loadGame();
-    render();
-    log("Welcome to Card Show Grinder.");
-  </script>
+          ${
+            card.permanentLock
+              ? `<div class="locked">🏆 Grail Collection</div>`
+              : card.locked
+                ? `<div class="locked">🔒 PC Hold</div>`
+                : ""
+          }
+          <div class="value">${money(card.value)}</div>
+          <div style="display:grid;gap:6px;margin-top:10px;">
+            <button onclick="gradeCard('${card.id}')">
+              Grade
+            </button>
+            <button onclick="sellCard('${card.id}')" class="secondary">
+              Sell
+            </button>
+            ${
+              card.permanentLock
+                ? `<button class="secondary" disabled>Grail Locked</button>`
+                : `
+                  <button onclick="toggleLock('${card.id}')" class="secondary">
+                    ${card.locked ? "Unlock" : "Lock PC"}
+                  </button>
+                `
+            }
+          </div>
+        </div>
+      `;
+    });
+  localStorage.setItem(
+    "cardShowSave",
+    JSON.stringify({ game, grails })
+  );
+}
+function loadGame() {
+  const save = localStorage.getItem("cardShowSave");
+  if (!save) return;
+  const data = JSON.parse(save);
+  game = data.game;
+  grails = data.grails;
+  if (game.energy === undefined) game.energy = 10;
+  if (game.maxEnergy === undefined) game.maxEnergy = 10;
+  game.inventory.forEach(card => {
+    if (card.locked === undefined) card.locked = false;
+    if (card.permanentLock === undefined) card.permanentLock = false;
+  });
+}
+function resetGame() {
+  if (!confirm("Reset your entire game?")) return;
+  localStorage.removeItem("cardShowSave");
+  location.reload();
+}
+loadGame();
+render();
+log("Welcome to Card Show Grinder.");
+</script>
 </body>
 </html>
