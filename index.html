@@ -1,3 +1,5 @@
+Paste this into your repo as index.html:
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -5,260 +7,121 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Card Show Grinder</title>
   <style>
-    * {
-      box-sizing: border-box;
-    }
-
     body {
       margin: 0;
       font-family: Arial, sans-serif;
-      background:
-        radial-gradient(circle at top left, #263b73, transparent 35%),
-        radial-gradient(circle at bottom right, #4d1f63, transparent 35%),
-        #0c0f17;
-      color: #f4f4f4;
-      min-height: 100vh;
+      background: #080b12;
+      color: white;
     }
-
     .app {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 18px;
-    }
-
-    header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 16px;
-      margin-bottom: 18px;
-    }
-
-    h1 {
-      margin: 0;
-      font-size: 28px;
-      letter-spacing: 1px;
-    }
-
-    .subtitle {
-      color: #b8bfd6;
-      margin-top: 4px;
-      font-size: 14px;
-    }
-
-    .grid {
-      display: grid;
-      grid-template-columns: 320px 1fr;
-      gap: 18px;
-    }
-
-    .panel {
-      background: rgba(16, 20, 33, 0.92);
-      border: 1px solid rgba(255,255,255,0.12);
-      border-radius: 16px;
+      max-width: 1100px;
+      margin: auto;
       padding: 16px;
-      box-shadow: 0 12px 40px rgba(0,0,0,0.35);
     }
-
-    .stats {
+    header {
+      background: linear-gradient(135deg, #1d3cff, #8b31ff);
+      padding: 18px;
+      border-radius: 18px;
+      margin-bottom: 16px;
+    }
+    h1, h2 {
+      margin: 0 0 8px;
+    }
+    .panel {
+      background: #121827;
+      border: 1px solid #2b344d;
+      border-radius: 16px;
+      padding: 14px;
+      margin-bottom: 14px;
+    }
+    .stats, .actions, .cards, .grails {
       display: grid;
-      grid-template-columns: 1fr 1fr;
       gap: 10px;
     }
-
-    .stat {
-      background: rgba(255,255,255,0.06);
+    .stats {
+      grid-template-columns: repeat(2, 1fr);
+    }
+    .stat, .card, .grail {
+      background: #1a2235;
       border-radius: 12px;
       padding: 12px;
     }
-
-    .stat label {
+    .stat small {
+      color: #aab3d1;
       display: block;
-      color: #aab2cf;
-      font-size: 12px;
-      margin-bottom: 6px;
     }
-
     .stat strong {
-      font-size: 20px;
+      font-size: 22px;
     }
-
-    .actions {
-      display: grid;
-      gap: 10px;
-      margin-top: 16px;
-    }
-
     button {
+      width: 100%;
       border: 0;
       border-radius: 12px;
-      padding: 12px 14px;
-      background: linear-gradient(135deg, #415cff, #8d45ff);
+      padding: 13px;
       color: white;
       font-weight: bold;
+      background: linear-gradient(135deg, #3157ff, #9047ff);
       cursor: pointer;
-      transition: transform 0.12s, opacity 0.12s;
     }
-
-    button:hover {
-      transform: translateY(-1px);
-      opacity: 0.95;
-    }
-
     button.secondary {
-      background: rgba(255,255,255,0.09);
-      border: 1px solid rgba(255,255,255,0.14);
+      background: #27314a;
     }
-
     button.danger {
-      background: linear-gradient(135deg, #b33131, #e15a5a);
+      background: #b83232;
     }
-
-    .main-area {
-      display: grid;
-      gap: 18px;
-    }
-
     .log {
-      height: 260px;
+      height: 220px;
       overflow-y: auto;
-      background: rgba(0,0,0,0.26);
+      background: #080b12;
       border-radius: 12px;
-      padding: 14px;
-      line-height: 1.45;
+      padding: 12px;
+      line-height: 1.4;
       color: #dce2ff;
-      font-size: 14px;
     }
-
     .log p {
       margin: 0 0 10px;
     }
-
     .cards {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
-      gap: 12px;
+      grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
     }
-
     .card {
-      background: linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0.03));
-      border: 1px solid rgba(255,255,255,0.12);
-      border-radius: 14px;
-      padding: 13px;
-      min-height: 150px;
-      position: relative;
+      border: 1px solid #33405f;
     }
-
-    .card h3 {
-      margin: 0 0 8px;
-      font-size: 16px;
-    }
-
-    .meta {
-      color: #aab2cf;
-      font-size: 13px;
-      margin: 4px 0;
-    }
-
-    .value {
-      font-size: 20px;
-      margin-top: 8px;
-      font-weight: bold;
-    }
-
-    .badge {
-      display: inline-block;
-      padding: 4px 8px;
-      border-radius: 999px;
-      font-size: 11px;
-      font-weight: bold;
-      margin-bottom: 8px;
-      background: #2b3352;
-      color: #dce2ff;
-    }
-
-    .Common { border-color: rgba(180,180,180,0.25); }
-    .Uncommon { border-color: rgba(85,190,125,0.5); }
-    .Rare { border-color: rgba(75,130,255,0.7); }
-    .Ultra-Rare { border-color: rgba(186,92,255,0.8); }
+    .Common { border-color: #777; }
+    .Uncommon { border-color: #4caf50; }
+    .Rare { border-color: #3d7bff; }
+    .Ultra { border-color: #b14cff; }
     .Grail {
       border-color: gold;
-      box-shadow: 0 0 24px rgba(255, 215, 0, 0.23);
+      box-shadow: 0 0 18px rgba(255, 215, 0, 0.3);
     }
-
-    .grails {
-      display: grid;
-      gap: 8px;
+    .badge {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: bold;
+      padding: 4px 7px;
+      border-radius: 999px;
+      background: #303a58;
+      margin-bottom: 6px;
     }
-
-    .grail {
-      display: flex;
-      justify-content: space-between;
-      gap: 10px;
-      background: rgba(255,255,255,0.06);
-      padding: 10px;
-      border-radius: 10px;
-      font-size: 13px;
+    .value {
+      font-size: 20px;
+      font-weight: bold;
+      margin-top: 8px;
     }
-
     .owned {
-      color: #76ff9d;
+      color: #75ff9d;
       font-weight: bold;
     }
-
     .missing {
-      color: #ffadad;
+      color: #ff9f9f;
       font-weight: bold;
     }
-
-    .modal {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.72);
-      align-items: center;
-      justify-content: center;
-      padding: 18px;
-    }
-
-    .modal.active {
-      display: flex;
-    }
-
-    .modal-content {
-      max-width: 520px;
-      width: 100%;
-      background: #121827;
-      border: 1px solid rgba(255,255,255,0.14);
-      border-radius: 18px;
-      padding: 18px;
-      box-shadow: 0 20px 60px rgba(0,0,0,0.55);
-    }
-
-    select {
-      width: 100%;
-      padding: 12px;
-      border-radius: 10px;
-      border: 1px solid rgba(255,255,255,0.16);
-      background: #0c0f17;
-      color: white;
-      margin: 12px 0;
-    }
-
-    .modal-actions {
-      display: flex;
-      gap: 10px;
-      justify-content: flex-end;
-    }
-
-    @media (max-width: 800px) {
-      .grid {
-        grid-template-columns: 1fr;
-      }
-
-      header {
-        align-items: flex-start;
-        flex-direction: column;
+    @media (min-width: 850px) {
+      .layout {
+        display: grid;
+        grid-template-columns: 310px 1fr;
+        gap: 14px;
       }
     }
   </style>
@@ -266,6 +129,333 @@
 <body>
   <div class="app">
     <header>
-      <div>
-        <h1>Card Show Grinder</h1>
-        <div class="subtitle">Rip packs
+      <h1>Card Show Grinder</h1>
+      <div>Rip packs. Grade cards. Trade up. Chase the grails.</div>
+    </header>
+    <div class="layout">
+      <aside>
+        <div class="panel">
+          <h2>Profile</h2>
+          <div class="stats">
+            <div class="stat"><small>Day</small><strong id="day"></strong></div>
+            <div class="stat"><small>Cash</small><strong id="cash"></strong></div>
+            <div class="stat"><small>Rep</small><strong id="rep"></strong></div>
+            <div class="stat"><small>Followers</small><strong id="followers"></strong></div>
+            <div class="stat"><small>Packs</small><strong id="packs"></strong></div>
+            <div class="stat"><small>Collection</small><strong id="collection"></strong></div>
+          </div>
+        </div>
+        <div class="panel">
+          <h2>Actions</h2>
+          <div class="actions">
+            <button onclick="buyPack()">Buy Sealed Pack - $50</button>
+            <button onclick="openPack(false)">Open Pack Privately</button>
+            <button onclick="openPack(true)">Break Pack on Stream</button>
+            <button class="secondary" onclick="gradeCard()">Submit Random Card for Grading - $25</button>
+            <button class="secondary" onclick="sellCard()">Sell Random Card</button>
+            <button class="secondary" onclick="tradeCard()">Trade With Collector</button>
+            <button onclick="endDay()">End Day</button>
+            <button class="danger" onclick="resetGame()">Reset Game</button>
+          </div>
+        </div>
+      </aside>
+      <main>
+        <div class="panel">
+          <h2>Convention Feed</h2>
+          <div class="log" id="log"></div>
+        </div>
+        <div class="panel">
+          <h2>Grail Progress</h2>
+          <div class="grails" id="grails"></div>
+        </div>
+        <div class="panel">
+          <h2>Inventory</h2>
+          <div class="cards" id="inventory"></div>
+        </div>
+      </main>
+    </div>
+  </div>
+  <script>
+    const sports = ["NFL", "NBA", "MLB", "NHL"];
+    const players = {
+      NFL: ["Rookie QB", "Star WR", "Elite Edge Rusher", "Franchise RB"],
+      NBA: ["Rookie Phenom", "All-Star Guard", "MVP Center", "High-Flying Wing"],
+      MLB: ["Power Hitter", "Ace Pitcher", "Rookie Shortstop", "Gold Glove Outfielder"],
+      NHL: ["Rookie Skater", "Star Goalie", "Elite Center", "Power Play Defenseman"]
+    };
+    let game = {
+      day: 1,
+      cash: 500,
+      rep: 10,
+      followers: 0,
+      packs: 3,
+      inventory: []
+    };
+    let grails = {
+      NFL: { name: "NFL Shield Rookie Auto", target: 25000, owned: false },
+      NBA: { name: "NBA Gold Rookie Auto", target: 30000, owned: false },
+      MLB: { name: "MLB Superfractor Rookie Auto", target: 20000, owned: false },
+      NHL: { name: "NHL Young Guns Clear Cut Auto", target: 18000, owned: false },
+      QUAD: { name: "Four-Sport Quad Auto", target: 100000, owned: false }
+    };
+    function money(num) {
+      return "$" + Math.round(num).toLocaleString();
+    }
+    function rand(min, max) {
+      return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+    function pick(arr) {
+      return arr[Math.floor(Math.random() * arr.length)];
+    }
+    function log(msg) {
+      const box = document.getElementById("log");
+      box.innerHTML = `<p>${msg}</p>` + box.innerHTML;
+    }
+    function collectionValue() {
+      return game.inventory.reduce((sum, card) => sum + card.value, 0);
+    }
+    function generateCard(stream = false) {
+      const sport = pick(sports);
+      const roll = rand(1, 1000);
+      let rarity;
+      let value;
+      if (roll <= 2) {
+        rarity = "Grail";
+        value = rand(18000, 100000);
+      } else if (roll <= 20) {
+        rarity = "Ultra Rare";
+        value = rand(1500, 10000);
+      } else if (roll <= 100) {
+        rarity = "Rare";
+        value = rand(250, 1500);
+      } else if (roll <= 350) {
+        rarity = "Uncommon";
+        value = rand(40, 250);
+      } else {
+        rarity = "Common";
+        value = rand(2, 40);
+      }
+      if (stream && ["Rare", "Ultra Rare", "Grail"].includes(rarity)) {
+        value = Math.floor(value * 1.15);
+      }
+      return {
+        id: Date.now() + Math.random(),
+        sport,
+        name: `${sport} ${pick(players[sport])}`,
+        rarity,
+        value,
+        graded: false,
+        grade: null
+      };
+    }
+    function checkGrail(card) {
+      if (card.rarity !== "Grail") return;
+      if (grails[card.sport] && !grails[card.sport].owned) {
+        grails[card.sport].owned = true;
+        log(`<strong>GRAIL ACQUIRED:</strong> ${grails[card.sport].name}`);
+      }
+      if (card.value >= 100000 && !grails.QUAD.owned) {
+        grails.QUAD.owned = true;
+        log(`<strong>LEGENDARY GRAIL ACQUIRED:</strong> Four-Sport Quad Auto`);
+      }
+    }
+    function buyPack() {
+      if (game.cash < 50) {
+        log("Not enough cash.");
+        return;
+      }
+      game.cash -= 50;
+      game.packs += 1;
+      log("You bought one sealed pack for $50.");
+      render();
+    }
+    function openPack(stream) {
+      if (game.packs <= 0) {
+        log("You have no sealed packs.");
+        return;
+      }
+      game.packs -= 1;
+      if (stream) {
+        game.followers += rand(5, 40);
+        game.rep += 1;
+        log("You went live and ripped a pack on stream.");
+      } else {
+        log("You opened a pack privately.");
+      }
+      const card = generateCard(stream);
+      game.inventory.push(card);
+      log(`You pulled <strong>${card.name}</strong> — ${card.rarity}, worth ${money(card.value)}.`);
+      if (stream && ["Rare", "Ultra Rare", "Grail"].includes(card.rarity)) {
+        const gained = rand(100, 1000);
+        game.followers += gained;
+        game.rep += 5;
+        log(`The stream went crazy. You gained ${gained} followers.`);
+      }
+      if (stream && ["Common", "Uncommon"].includes(card.rarity)) {
+        game.rep -= 1;
+        log("Chat was not impressed. Reputation dropped.");
+      }
+      checkGrail(card);
+      render();
+    }
+    function gradeCard() {
+      if (!game.inventory.length) {
+        log("You have no cards to grade.");
+        return;
+      }
+      if (game.cash < 25) {
+        log("Not enough cash to grade.");
+        return;
+      }
+      const rawCards = game.inventory.filter(card => !card.graded);
+      if (!rawCards.length) {
+        log("All your cards are already graded.");
+        return;
+      }
+      const card = pick(rawCards);
+      game.cash -= 25;
+      const roll = rand(1, 100);
+      let grade;
+      if (roll <= 10) grade = 6;
+      else if (roll <= 30) grade = 7;
+      else if (roll <= 65) grade = 8;
+      else if (roll <= 90) grade = 9;
+      else grade = 10;
+      card.graded = true;
+      card.grade = grade;
+      if (grade === 10) {
+        card.value *= 3;
+        log(`Gem Mint 10. ${card.name} tripled in value.`);
+      } else if (grade === 9) {
+        card.value *= 1.8;
+        log(`Mint 9. ${card.name} got a strong value bump.`);
+      } else if (grade === 8) {
+        card.value *= 1.2;
+        log(`Grade 8. ${card.name} got a small bump.`);
+      } else {
+        card.value *= 0.75;
+        log(`Bad grade. ${card.name} lost value.`);
+      }
+      card.value = Math.floor(card.value);
+      render();
+    }
+    function sellCard() {
+      if (!game.inventory.length) {
+        log("You have no cards to sell.");
+        return;
+      }
+      const card = pick(game.inventory);
+      const sale = rand(card.value * 0.85, card.value * 1.15);
+      game.inventory = game.inventory.filter(c => c.id !== card.id);
+      game.cash += Math.floor(sale);
+      log(`You sold ${card.name} for ${money(sale)}.`);
+      render();
+    }
+    function tradeCard() {
+      if (!game.inventory.length) {
+        log("You have no cards to trade.");
+        return;
+      }
+      const outgoing = pick(game.inventory);
+      const incoming = generateCard(false);
+      const accept = confirm(
+        `Collector offers:\n${incoming.name} | ${incoming.rarity} | ${money(incoming.value)}\n\n` +
+        `For your:\n${outgoing.name} | ${outgoing.rarity} | ${money(outgoing.value)}\n\nAccept trade?`
+      );
+      if (!accept) {
+        log("You walked away from the trade.");
+        return;
+      }
+      game.inventory = game.inventory.filter(c => c.id !== outgoing.id);
+      game.inventory.push(incoming);
+      if (incoming.value >= outgoing.value) {
+        game.rep += 1;
+        log("Trade accepted. You gained value and reputation.");
+      } else {
+        game.rep -= 1;
+        log("Trade accepted. You may have lost value.");
+      }
+      checkGrail(incoming);
+      render();
+    }
+    function endDay() {
+      game.day += 1;
+      game.cash -= 20;
+      const event = pick([
+        ["NBA rookies are heating up.", "NBA", 1.15],
+        ["NFL market cooled off today.", "NFL", 0.9],
+        ["MLB prospects are trending.", "MLB", 1.1],
+        ["NHL collectors showed up strong.", "NHL", 1.1],
+        ["The market was flat today.", null, 1]
+      ]);
+      log("The convention day ends. You spend $20 on food and table fees.");
+      log(`<strong>Market Update:</strong> ${event[0]}`);
+      if (event[1]) {
+        game.inventory.forEach(card => {
+          if (card.sport === event[1]) {
+            card.value = Math.max(1, Math.floor(card.value * event[2]));
+          }
+        });
+      }
+      render();
+    }
+    function render() {
+      document.getElementById("day").textContent = game.day;
+      document.getElementById("cash").textContent = money(game.cash);
+      document.getElementById("rep").textContent = game.rep;
+      document.getElementById("followers").textContent = game.followers.toLocaleString();
+      document.getElementById("packs").textContent = game.packs;
+      document.getElementById("collection").textContent = money(collectionValue());
+      const grailBox = document.getElementById("grails");
+      grailBox.innerHTML = "";
+      Object.entries(grails).forEach(([key, grail]) => {
+        grailBox.innerHTML += `
+          <div class="grail">
+            <strong>${key}</strong><br>
+            ${grail.name}<br>
+            Target: ${money(grail.target)}<br>
+            <span class="${grail.owned ? "owned" : "missing"}">
+              ${grail.owned ? "OWNED" : "MISSING"}
+            </span>
+          </div>
+        `;
+      });
+      const inv = document.getElementById("inventory");
+      inv.innerHTML = "";
+      if (!game.inventory.length) {
+        inv.innerHTML = "<p>No cards yet.</p>";
+      }
+      game.inventory
+        .slice()
+        .sort((a, b) => b.value - a.value)
+        .forEach(card => {
+          inv.innerHTML += `
+            <div class="card ${card.rarity.split(" ")[0]}">
+              <span class="badge">${card.rarity}</span>
+              <h3>${card.name}</h3>
+              <div>${card.sport}</div>
+              <div>${card.graded ? "Grade: " + card.grade : "Raw Card"}</div>
+              <div class="value">${money(card.value)}</div>
+            </div>
+          `;
+        });
+      localStorage.setItem("cardShowGrinderSave", JSON.stringify({ game, grails }));
+    }
+    function loadGame() {
+      const save = localStorage.getItem("cardShowGrinderSave");
+      if (!save) return;
+      const data = JSON.parse(save);
+      game = data.game;
+      grails = data.grails;
+    }
+    function resetGame() {
+      if (!confirm("Reset game?")) return;
+      localStorage.removeItem("cardShowGrinderSave");
+      location.reload();
+    }
+    loadGame();
+    render();
+    log("Welcome to Card Show Grinder.");
+  </script>
+</body>
+</html>
