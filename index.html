@@ -1,0 +1,652 @@
+You’re right. I gave patch notes instead of the full replacement.
+
+Here is the full index.html:
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>NFL Card Show Grinder</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,sans-serif;background:radial-gradient(circle at top left,#263b73,transparent 30%),radial-gradient(circle at bottom right,#4d1f63,transparent 30%),#080b12;color:white}
+.app{max-width:1100px;margin:auto;padding:12px 12px 86px}
+.top{position:sticky;top:0;z-index:20;background:rgba(8,11,18,.94);backdrop-filter:blur(10px);border:1px solid #2b344d;border-radius:16px;padding:10px;margin-bottom:12px}
+h1,h2,h3{margin:0 0 8px}
+h1{font-size:20px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.stat,.panel,.card,.pack,.set,.market,.logitem{background:#121827;border:1px solid #2b344d;border-radius:16px;padding:12px}
+.stat{text-align:center;background:#1a2235}
+.stat small{display:block;color:#aab3d1;font-size:11px}
+.stat strong{font-size:15px}
+.ticker{margin-top:8px;background:#050812;border:1px solid #2b344d;border-radius:999px;overflow:hidden;white-space:nowrap;font-size:12px;color:#dce2ff}
+.ticker span{display:inline-block;padding:8px 0;animation:ticker 26s linear infinite}
+@keyframes ticker{from{transform:translateX(100%)}to{transform:translateX(-100%)}}
+.panel{margin-bottom:12px}
+.tabs{position:fixed;bottom:0;left:0;right:0;z-index:50;display:grid;grid-template-columns:repeat(6,1fr);gap:5px;padding:8px;background:rgba(8,11,18,.96);border-top:1px solid #2b344d}
+button,select{width:100%;border:0;border-radius:12px;padding:11px;color:white;font-weight:bold;background:linear-gradient(135deg,#3157ff,#9047ff);cursor:pointer;margin-top:7px}
+button.secondary{background:#27314a}
+button.danger{background:#b83232}
+button:disabled{opacity:.45}
+.tabs button{font-size:11px;padding:9px 3px;margin:0;background:#1c2740}
+.tabs button.active{background:linear-gradient(135deg,#ffd45a,#c77dff);color:#111}
+.tab{display:none}
+.tab.active{display:block}
+.grid,.cards,.packs,.sets,.markets{display:grid;gap:10px}
+.cards{grid-template-columns:repeat(auto-fill,minmax(165px,1fr))}
+@media(min-width:800px){.packs,.sets,.markets{grid-template-columns:repeat(2,1fr)}}
+.card{background:#1a2235;cursor:pointer}
+.Common{border-color:#777}.Uncommon{border-color:#4caf50}.Rare{border-color:#3d7bff}.Ultra{border-color:#b14cff;box-shadow:0 0 14px rgba(177,76,255,.25)}.Grail{border-color:gold;box-shadow:0 0 18px rgba(255,215,0,.35)}
+.badge{display:inline-block;font-size:11px;font-weight:bold;padding:4px 8px;border-radius:999px;background:#303a58;margin-bottom:6px}
+.muted{color:#aab3d1;font-size:12px}
+.value{font-size:19px;font-weight:bold;margin-top:8px}
+.owned{color:#75ff9d;font-weight:bold}
+.missing{color:#ff9f9f;font-weight:bold}
+.locked{color:#ffd86b;font-weight:bold}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+select{background:#1a2235;border:1px solid #33405f}
+.toast{display:none;position:fixed;top:14px;left:50%;transform:translateX(-50%);z-index:1000;min-width:285px;max-width:92vw;background:#121827;border:1px solid #46557c;border-radius:16px;padding:14px;box-shadow:0 12px 40px rgba(0,0,0,.55)}
+.toast.show{display:block;animation:fade 3s forwards}
+@keyframes fade{0%{opacity:0;transform:translateX(-50%) translateY(-10px)}10%{opacity:1;transform:translateX(-50%)}80%{opacity:1}100%{opacity:0}}
+.modal{display:none;position:fixed;inset:0;z-index:900;background:rgba(0,0,0,.78);align-items:center;justify-content:center;padding:14px}
+.modal.active{display:flex}
+.modalbox{width:100%;max-width:560px;max-height:88vh;overflow:auto;background:#121827;border:1px solid #394565;border-radius:20px;padding:16px}
+.modalactions{display:grid;gap:8px;margin-top:12px}
+.packanim{width:190px;height:270px;margin:18px auto;border-radius:20px;background:linear-gradient(135deg,#3157ff,#9047ff);display:flex;align-items:center;justify-content:center;text-align:center;font-weight:bold;transition:.55s;border:2px solid rgba(255,255,255,.2)}
+.reveal{transform:rotateY(360deg) scale(1.05)}
+.chat{background:#060914;border:1px solid #25314f;border-radius:12px;padding:8px;max-height:110px;overflow:auto;text-align:left;font-size:12px;color:#dce4ff;margin-top:8px}
+.hidden{display:none}
+.progress{height:9px;background:#050812;border-radius:999px;overflow:hidden;border:1px solid #2b3654}
+.bar{height:100%;background:linear-gradient(135deg,#ffd452,#a045ff)}
+</style>
+</head>
+<body>
+<div id="toast" class="toast"></div>
+<div id="packModal" class="modal">
+  <div class="modalbox" style="text-align:center">
+    <h2 id="packTitle">Opening Pack</h2>
+    <div id="packAnim" class="packanim">SEALED PACK</div>
+    <div id="liveChat" class="chat hidden"></div>
+    <button id="packStepBtn" onclick="finishPackReveal()">Reveal</button>
+  </div>
+</div>
+<div id="modal" class="modal">
+  <div class="modalbox">
+    <h2 id="modalTitle"></h2>
+    <div id="modalBody"></div>
+    <div id="modalActions" class="modalactions"></div>
+    <button class="secondary" onclick="closeModal()">Close</button>
+  </div>
+</div>
+<div class="app">
+  <div class="top">
+    <h1>NFL Card Show Grinder</h1>
+    <div class="stats">
+      <div class="stat"><small>Cash</small><strong id="cash"></strong></div>
+      <div class="stat"><small>Rank</small><strong id="rank"></strong></div>
+      <div class="stat"><small>Score</small><strong id="score"></strong></div>
+      <div class="stat"><small>Day</small><strong id="day"></strong></div>
+    </div>
+    <div class="ticker"><span id="tickerText"></span></div>
+  </div>
+  <section id="tabPacks" class="tab active">
+    <div class="panel">
+      <h2>Packs</h2>
+      <div class="packs" id="packGrid"></div>
+    </div>
+  </section>
+  <section id="tabCards" class="tab">
+    <div class="panel">
+      <h2>Inventory</h2>
+      <div class="row">
+        <select id="sortSelect" onchange="render()">
+          <option value="value">Sort: Value</option>
+          <option value="rarity">Sort: Rarity</option>
+          <option value="player">Sort: Player</option>
+          <option value="set">Sort: Set</option>
+          <option value="grade">Sort: Grade</option>
+        </select>
+        <select id="filterSelect" onchange="render()">
+          <option value="all">All</option>
+          <option value="wishlist">Wishlist</option>
+          <option value="rare">Rare+</option>
+          <option value="rookie">Rookies</option>
+          <option value="qb">QBs</option>
+          <option value="graded">Graded</option>
+          <option value="raw">Raw</option>
+        </select>
+      </div>
+      <div class="cards" id="inventoryCards"></div>
+    </div>
+  </section>
+  <section id="tabPC" class="tab">
+    <div class="panel">
+      <h2>Personal Collection</h2>
+      <div class="cards" id="pcCards"></div>
+    </div>
+  </section>
+  <section id="tabSets" class="tab">
+    <div class="panel">
+      <h2>Sets</h2>
+      <button class="secondary" onclick="sellDuplicates()">Sell Safe Duplicates</button>
+      <button class="secondary" onclick="sellJunk()">Sell Safe Common/Uncommon</button>
+      <div class="sets" id="setList"></div>
+    </div>
+  </section>
+  <section id="tabMarket" class="tab">
+    <div class="panel">
+      <h2>Market / News</h2>
+      <button class="secondary" onclick="advanceDay()">Sleep / Next Day</button>
+      <div class="markets" id="marketCards"></div>
+      <h3>Latest News</h3>
+      <div class="grid" id="newsLog"></div>
+    </div>
+  </section>
+  <section id="tabSettings" class="tab">
+    <div class="panel">
+      <h2>Settings / Save</h2>
+      <button onclick="manualSave()">Save Game</button>
+      <button onclick="manualLoad()">Load Game</button>
+      <button onclick="exportSave()">Export Save</button>
+      <button onclick="importSave()">Import Save</button>
+      <button class="secondary" onclick="showWishlist()">Wishlist</button>
+      <button class="secondary" onclick="showEventLog()">Event Log</button>
+      <button class="danger" onclick="resetGame()">Reset Game</button>
+      <div id="settingsOutput"></div>
+    </div>
+  </section>
+</div>
+<nav class="tabs">
+  <button id="navPacks" onclick="showTab('Packs')" class="active">Packs</button>
+  <button id="navCards" onclick="showTab('Cards')">Cards</button>
+  <button id="navPC" onclick="showTab('PC')">PC</button>
+  <button id="navSets" onclick="showTab('Sets')">Sets</button>
+  <button id="navMarket" onclick="showTab('Market')">Market</button>
+  <button id="navSettings" onclick="showTab('Settings')">Settings</button>
+</nav>
+<script>
+const rarityRank={Common:1,Uncommon:2,Rare:3,"Ultra Rare":4,Grail:5};
+const packTypes={
+  retail:{label:"Retail Pack",cost:15,boost:.65,desc:"Cheap set fillers. Low ceiling."},
+  hobby:{label:"Hobby Pack",cost:50,boost:1,desc:"Balanced odds. Main convention rip."},
+  premium:{label:"Premium Box",cost:250,boost:2.2,desc:"Better parallels and bigger hits."},
+  breaker:{label:"Breaker Case",cost:1000,boost:4.5,desc:"Best odds. Expensive misses."}
+};
+const players=[
+{name:"Caleb Williams",tier:"Rookie",pos:"QB",team:"CHI"},
+{name:"Jayden Daniels",tier:"Rookie",pos:"QB",team:"WAS"},
+{name:"Drake Maye",tier:"Rookie",pos:"QB",team:"NE"},
+{name:"Bo Nix",tier:"Rookie",pos:"QB",team:"DEN"},
+{name:"Marvin Harrison Jr.",tier:"Rookie",pos:"WR",team:"ARI"},
+{name:"Malik Nabers",tier:"Rookie",pos:"WR",team:"NYG"},
+{name:"Brock Bowers",tier:"Rookie",pos:"TE",team:"LV"},
+{name:"C.J. Stroud",tier:"Year 2",pos:"QB",team:"HOU"},
+{name:"Anthony Richardson",tier:"Year 2",pos:"QB",team:"IND"},
+{name:"Bijan Robinson",tier:"Year 2",pos:"RB",team:"ATL"},
+{name:"Puka Nacua",tier:"Year 2",pos:"WR",team:"LAR"},
+{name:"Jahmyr Gibbs",tier:"Year 2",pos:"RB",team:"DET"},
+{name:"Patrick Mahomes",tier:"Prime Vet",pos:"QB",team:"KC"},
+{name:"Josh Allen",tier:"Prime Vet",pos:"QB",team:"BUF"},
+{name:"Lamar Jackson",tier:"Prime Vet",pos:"QB",team:"BAL"},
+{name:"Joe Burrow",tier:"Prime Vet",pos:"QB",team:"CIN"},
+{name:"Justin Jefferson",tier:"Prime Vet",pos:"WR",team:"MIN"},
+{name:"Ja'Marr Chase",tier:"Prime Vet",pos:"WR",team:"CIN"},
+{name:"Christian McCaffrey",tier:"Prime Vet",pos:"RB",team:"SF"},
+{name:"Micah Parsons",tier:"Prime Vet",pos:"DEF",team:"DAL"},
+{name:"Tom Brady",tier:"Legend",pos:"QB",team:"LEG"},
+{name:"Peyton Manning",tier:"Legend",pos:"QB",team:"LEG"},
+{name:"Jerry Rice",tier:"Legend",pos:"WR",team:"LEG"},
+{name:"Barry Sanders",tier:"Legend",pos:"RB",team:"LEG"},
+{name:"Randy Moss",tier:"Legend",pos:"WR",team:"LEG"},
+{name:"Deion Sanders",tier:"Legend",pos:"DEF",team:"LEG"}
+];
+const sets={
+rookie:{name:"Rookie Chase Checklist",needed:18},
+chrome:{name:"Chrome Field Generals",needed:16},
+legends:{name:"Gridiron Legends",needed:12},
+national:{name:"National Exclusive NFL",needed:20},
+grails:{name:"Grail Collection",needed:5}
+};
+const variants=[
+{name:"Base",mult:1,serial:null},
+{name:"Silver",mult:1.25,serial:null},
+{name:"Blue",mult:1.7,serial:99},
+{name:"Red",mult:2.2,serial:49},
+{name:"Gold",mult:4,serial:10},
+{name:"Black",mult:10,serial:1},
+{name:"Auto",mult:3,serial:null},
+{name:"Patch Auto",mult:5.5,serial:25}
+];
+const defaultMarket=[
+{label:"Rookie QB Index",sentiment:"Bullish",change:12,targets:{tier:"Rookie",pos:"QB"}},
+{label:"Veteran Autos",sentiment:"Neutral",change:2,targets:{tier:"Prime Vet",variant:"Auto"}},
+{label:"RB Prospects",sentiment:"Bearish",change:-8,targets:{pos:"RB"}},
+{label:"Gold /10 Market",sentiment:"Hot",change:18,targets:{variant:"Gold"}},
+{label:"Legend Market",sentiment:"Stable",change:4,targets:{tier:"Legend"}}
+];
+let game={
+cash:500,day:1,rep:10,followers:0,liveCooldown:0,
+packs:{retail:0,hobby:3,premium:0,breaker:0},
+inventory:[],gradingQueue:[],newsLog:[],eventLog:[],
+market:JSON.parse(JSON.stringify(defaultMarket)),
+wishlist:{players:["Patrick Mahomes","Caleb Williams"],variants:["Gold","Black","Patch Auto"],sets:["rookie"]}
+};
+let currentPack=null;
+function money(n){return "$"+Math.round(n).toLocaleString();}
+function rand(min,max){return Math.floor(Math.random()*(Math.floor(max)-Math.ceil(min)+1))+Math.ceil(min);}
+function pick(a){return a[Math.floor(Math.random()*a.length)];}
+function toast(msg){
+const t=document.getElementById("toast");
+t.innerHTML=msg;
+t.className="toast show";
+setTimeout(()=>t.className="toast",3000);
+}
+function event(msg){
+game.eventLog.unshift(msg);
+toast(msg);
+}
+function closeModal(){document.getElementById("modal").classList.remove("active");}
+function showTab(name){
+document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));
+document.querySelectorAll(".tabs button").forEach(b=>b.classList.remove("active"));
+document.getElementById("tab"+name).classList.add("active");
+document.getElementById("nav"+name).classList.add("active");
+}
+function score(){
+return game.inventory.reduce((s,c)=>s+(rarityRank[c.rarity]*10)+(c.locked?25:0)+(c.graded?c.grade*4:0)+(c.variant==="Black"?100:0),0);
+}
+function rank(){
+const s=score();
+if(s>=2500)return"Legend";
+if(s>=1200)return"VIP";
+if(s>=600)return"Trade Night";
+if(s>=250)return"Known";
+return"Starter";
+}
+function buyPack(type){
+const p=packTypes[type];
+if(game.cash<p.cost){event("Not enough cash.");return;}
+game.cash-=p.cost;
+game.packs[type]++;
+event(`Bought ${p.label} for ${money(p.cost)}.`);
+render();
+}
+function chooseVariant(type){
+const b=packTypes[type].boost;
+const r=rand(1,1000);
+if(r<=5*b)return variants[5];
+if(r<=25*b)return variants[4];
+if(r<=65*b)return variants[7];
+if(r<=120*b)return variants[6];
+if(r<=200*b)return variants[3];
+if(r<=340*b)return variants[2];
+if(r<=540*b)return variants[1];
+return variants[0];
+}
+function generateCard(type="hobby",live=false){
+const p=pick(players);
+let setKey=pick(Object.keys(sets).filter(s=>s!=="grails"));
+const v=chooseVariant(type);
+const b=packTypes[type].boost;
+const roll=rand(1,1000);
+let rarity,value;
+if(roll<=2*b){rarity="Grail";value=rand(18000,100000);setKey="grails";}
+else if(roll<=20*b){rarity="Ultra Rare";value=rand(1500,10000);}
+else if(roll<=100*b){rarity="Rare";value=rand(250,1500);}
+else if(roll<=350*b){rarity="Uncommon";value=rand(40,250);}
+else{rarity="Common";value=rand(2,40);}
+value*=v.mult;
+if(p.pos==="QB")value*=1.55;
+if(p.tier==="Legend")value*=1.4;
+if(live&&rarityRank[rarity]>=3)value*=1.15;
+return{
+id:Date.now().toString()+Math.random().toString(16).slice(2),
+player:p.name,tier:p.tier,pos:p.pos,team:p.team,
+setKey,setName:sets[setKey].name,
+variant:rarity==="Grail"?"Grail":v.name,
+serial:rarity==="Grail"?"1/1":v.serial?`${rand(1,v.serial)}/${v.serial}`:null,
+rarity,value:Math.floor(value),
+graded:false,grade:null,locked:false,atGrading:false
+};
+}
+function ripPack(type,live){
+if(game.packs[type]<=0){event(`No ${packTypes[type].label}s available.`);return;}
+if(live&&game.liveCooldown>0){event(`Live break cooling down for ${game.liveCooldown} day(s).`);return;}
+game.packs[type]--;
+currentPack={type,live,card:generateCard(type,live)};
+document.getElementById("packModal").classList.add("active");
+document.getElementById("packTitle").innerText=live?"LIVE BREAK":"PRIVATE RIP";
+document.getElementById("packAnim").className="packanim reveal";
+document.getElementById("packAnim").innerHTML="SPINNING...";
+document.getElementById("packStepBtn").innerText="Reveal";
+document.getElementById("liveChat").className="chat hidden";
+document.getElementById("liveChat").innerHTML="";
+render();
+}
+function finishPackReveal(){
+const c=currentPack.card;
+applyMarket(c);
+document.getElementById("packAnim").className=`packanim reveal ${c.rarity.split(" ")[0]}`;
+document.getElementById("packAnim").innerHTML=`<div><div style="font-size:34px">🏈</div><div>${c.player}</div><div>${c.variant} ${c.serial||""}</div><div>${c.rarity}</div><div>${money(c.value)}</div></div>`;
+game.inventory.push(c);
+if(currentPack.live){
+const chat=document.getElementById("liveChat");
+chat.className="chat";
+game.liveCooldown=2;
+game.followers+=rand(10,60);
+game.rep++;
+if(c.rarity==="Grail"){
+chat.innerHTML="CHAT GOING NUTS<br>1/1 ENERGY<br>CLIP THIS";
+game.followers+=rand(1500,5000);
+game.rep+=10;
+c.value=Math.floor(c.value*1.45);
+}else if(rarityRank[c.rarity]>=4||["Gold","Black","Patch Auto"].includes(c.variant)){
+chat.innerHTML="W HIT<br>Chat: huge pull<br>Chat: grade that now";
+game.followers+=rand(500,2000);
+game.rep+=6;
+c.value=Math.floor(c.value*1.3);
+}else if(rarityRank[c.rarity]>=3){
+chat.innerHTML="Solid hit<br>Chat: not bad";
+game.followers+=rand(150,800);
+game.rep+=3;
+c.value=Math.floor(c.value*1.12);
+}else{
+chat.innerHTML="Chat went quiet<br>Chat: next pack";
+game.rep-=1;
+}
+}
+if(isWishlist(c))event(`Wishlist hit: ${c.player} ${c.variant}.`);
+else event(`Pulled ${c.player} ${c.variant} ${c.serial||""} — ${c.rarity}, ${money(c.value)}.`);
+if(c.rarity==="Grail")event("🏆 Grail Collection hit.");
+if(Math.random()<.25)triggerNews();
+render();
+document.getElementById("packStepBtn").innerText="Close";
+document.getElementById("packStepBtn").onclick=function(){
+document.getElementById("packModal").classList.remove("active");
+document.getElementById("packStepBtn").onclick=finishPackReveal;
+};
+}
+function applyMarket(c){
+game.market.forEach(m=>{
+let ok=true;
+if(m.targets.tier&&c.tier!==m.targets.tier)ok=false;
+if(m.targets.pos&&c.pos!==m.targets.pos)ok=false;
+if(m.targets.variant&&c.variant!==m.targets.variant)ok=false;
+if(ok)c.value=Math.max(1,Math.floor(c.value*(1+m.change/100)));
+});
+}
+function isWishlist(c){
+return game.wishlist.players.includes(c.player)||game.wishlist.variants.includes(c.variant)||game.wishlist.sets.includes(c.setKey);
+}
+function cardKey(c){return `${c.setKey}|${c.player}|${c.variant}|${c.serial||""}`;}
+function openCard(id){
+const c=game.inventory.find(x=>x.id===id);
+if(!c)return;
+document.getElementById("modalTitle").innerText=c.player;
+document.getElementById("modalBody").innerHTML=`
+<p>${c.team} | ${c.pos} | ${c.tier}</p>
+<p>${c.setName} | ${c.variant} ${c.serial||""}</p>
+<p>${c.rarity} | ${c.graded?"PSA "+c.grade:"Raw"}</p>
+<p class="value">${money(c.value)}</p>
+${isWishlist(c)?'<p class="owned">Wishlist Match</p>':''}
+${c.locked?'<p class="locked">Protected PC Card</p>':''}
+`;
+document.getElementById("modalActions").innerHTML=`
+<button onclick="submitGrade('${c.id}')" ${c.graded||c.atGrading?"disabled":""}>Submit for Grading - $25</button>
+<button class="secondary" onclick="sellCard('${c.id}')" ${c.locked||c.atGrading?"disabled":""}>Sell Card</button>
+<button class="secondary" onclick="togglePC('${c.id}')" ${c.atGrading?"disabled":""}>${c.locked?"Unlock PC":"Lock to PC"}</button>
+<button class="secondary" onclick="addWishlistPlayer('${c.player}')">Wishlist Player</button>
+<button class="secondary" onclick="addWishlistVariant('${c.variant}')">Wishlist Variant</button>
+<button class="secondary" onclick="addWishlistSet('${c.setKey}')">Wishlist Set</button>
+`;
+document.getElementById("modal").classList.add("active");
+}
+function submitGrade(id){
+const c=game.inventory.find(x=>x.id===id);
+if(!c||game.cash<25)return;
+game.cash-=25;
+c.atGrading=true;
+game.gradingQueue.push({cardId:id,daysLeft:rand(2,3)});
+event(`${c.player} sent to grading.`);
+closeModal();
+render();
+}
+function revealGrade(c){
+const r=rand(1,100);
+let g;
+if(r<=10)g=6;else if(r<=30)g=7;else if(r<=65)g=8;else if(r<=90)g=9;else g=10;
+c.graded=true;
+c.grade=g;
+c.atGrading=false;
+if(g===10)c.value*=3;
+else if(g===9)c.value*=1.8;
+else if(g===8)c.value*=1.2;
+else c.value*=.75;
+c.value=Math.floor(c.value);
+event(`Grading Reveal: ${c.player} came back PSA ${g}.`);
+}
+function onlyCopy(c){return game.inventory.filter(x=>cardKey(x)===cardKey(c)).length===1;}
+function sellCard(id){
+const c=game.inventory.find(x=>x.id===id);
+if(!c||c.locked||c.atGrading)return;
+if(onlyCopy(c)&&!confirm("This is your only copy for a set slot. Sell anyway?"))return;
+const sale=Math.floor(rand(c.value*.85,c.value*1.15));
+game.cash+=sale;
+game.inventory=game.inventory.filter(x=>x.id!==id);
+event(`Sold ${c.player} for ${money(sale)}.`);
+closeModal();
+render();
+}
+function togglePC(id){
+const c=game.inventory.find(x=>x.id===id);
+if(!c)return;
+c.locked=!c.locked;
+event(c.locked?`${c.player} locked to PC.`:`${c.player} unlocked.`);
+closeModal();
+render();
+}
+function addWishlistPlayer(p){if(!game.wishlist.players.includes(p))game.wishlist.players.push(p);event(`${p} added to wishlist.`);render();}
+function addWishlistVariant(v){if(!game.wishlist.variants.includes(v))game.wishlist.variants.push(v);event(`${v} added to wishlist.`);render();}
+function addWishlistSet(s){if(!game.wishlist.sets.includes(s))game.wishlist.sets.push(s);event(`${sets[s].name} added to wishlist.`);render();}
+function sellJunk(){
+const junk=game.inventory.filter(c=>!c.locked&&!c.atGrading&&!isWishlist(c)&&rarityRank[c.rarity]<=2&&!onlyCopy(c));
+if(!junk.length){event("No safe junk cards to sell.");return;}
+const ids=new Set(junk.map(c=>c.id));
+const total=junk.reduce((s,c)=>s+Math.floor(c.value*.9),0);
+game.inventory=game.inventory.filter(c=>!ids.has(c.id));
+game.cash+=total;
+event(`Sold ${junk.length} junk cards for ${money(total)}.`);
+render();
+}
+function sellDuplicates(){
+const groups={};
+game.inventory.forEach(c=>{
+if(c.locked||c.atGrading||isWishlist(c))return;
+const k=cardKey(c);
+if(!groups[k])groups[k]=[];
+groups[k].push(c);
+});
+let sell=[];
+Object.values(groups).forEach(g=>{
+if(g.length>1){
+g.sort((a,b)=>(b.grade||0)-(a.grade||0)||b.value-a.value);
+sell.push(...g.slice(1));
+}
+});
+if(!sell.length){event("No safe duplicates to sell.");return;}
+const ids=new Set(sell.map(c=>c.id));
+const total=sell.reduce((s,c)=>s+Math.floor(c.value*.9),0);
+game.inventory=game.inventory.filter(c=>!ids.has(c.id));
+game.cash+=total;
+event(`Sold ${sell.length} duplicates for ${money(total)}.`);
+render();
+}
+function triggerNews(){
+const p=pick(players);
+const news=[
+{txt:`BREAKING: ${p.name} injured in practice.`,mult:.78,target:p.name},
+{txt:`TRENDING: ${p.name} getting major hobby buzz.`,mult:1.22,target:p.name},
+{txt:`CAMP REPORT: ${p.pos} market heating up.`,mult:1.12,pos:p.pos},
+{txt:`MARKET WATCH: Gold parallels are surging.`,mult:1.18,variant:"Gold"}
+];
+const n=pick(news);
+game.newsLog.unshift(n.txt);
+game.inventory.forEach(c=>{
+let ok=false;
+if(n.target&&c.player===n.target)ok=true;
+if(n.pos&&c.pos===n.pos)ok=true;
+if(n.variant&&c.variant===n.variant)ok=true;
+if(ok)c.value=Math.max(1,Math.floor(c.value*n.mult));
+});
+event(n.txt);
+render();
+}
+function rerollMarket(){
+game.market=JSON.parse(JSON.stringify(defaultMarket)).map(m=>{
+const moods=["Bullish","Neutral","Bearish","Hot","Cooling","Stable"];
+const sentiment=pick(moods);
+const change={Bullish:rand(6,16),Neutral:rand(-2,3),Bearish:rand(-16,-5),Hot:rand(14,25),Cooling:rand(-10,-3),Stable:rand(1,5)}[sentiment];
+return{...m,sentiment,change};
+});
+}
+function advanceDay(){
+game.day++;
+if(game.liveCooldown>0)game.liveCooldown--;
+game.cash-=20;
+game.gradingQueue.forEach(g=>g.daysLeft--);
+const ready=game.gradingQueue.filter(g=>g.daysLeft<=0);
+game.gradingQueue=game.gradingQueue.filter(g=>g.daysLeft>0);
+ready.forEach(g=>{
+const c=game.inventory.find(x=>x.id===g.cardId);
+if(c)revealGrade(c);
+});
+rerollMarket();
+if(Math.random()<.65)triggerNews();
+else event("New day at the show. Dealer inventory refreshed.");
+render();
+}
+function cardHTML(c){
+return`
+<div class="card ${c.rarity.split(" ")[0]}" onclick="openCard('${c.id}')">
+<span class="badge">${c.rarity}</span>
+<div style="font-size:32px">🏈</div>
+<h3>${c.player}</h3>
+<div class="muted">${c.team} | ${c.pos} | ${c.tier}</div>
+<div>${c.variant} ${c.serial||""}</div>
+<div class="muted">${c.setName}</div>
+${isWishlist(c)?'<div class="owned">Wishlist Match</div>':''}
+${c.locked?'<div class="locked">🔒 PC Hold</div>':''}
+<div class="value">${money(c.value)}</div>
+</div>`;
+}
+function renderCards(){
+let list=game.inventory.filter(c=>!c.atGrading&&!c.locked);
+const filter=document.getElementById("filterSelect")?.value||"all";
+const sort=document.getElementById("sortSelect")?.value||"value";
+if(filter==="wishlist")list=list.filter(isWishlist);
+if(filter==="rare")list=list.filter(c=>rarityRank[c.rarity]>=3);
+if(filter==="rookie")list=list.filter(c=>c.tier==="Rookie");
+if(filter==="qb")list=list.filter(c=>c.pos==="QB");
+if(filter==="graded")list=list.filter(c=>c.graded);
+if(filter==="raw")list=list.filter(c=>!c.graded);
+list.sort((a,b)=>{
+if(sort==="value")return b.value-a.value;
+if(sort==="rarity")return rarityRank[b.rarity]-rarityRank[a.rarity];
+if(sort==="player")return a.player.localeCompare(b.player);
+if(sort==="set")return a.setName.localeCompare(b.setName);
+return (b.grade||0)-(a.grade||0);
+});
+document.getElementById("inventoryCards").innerHTML=list.length?list.map(cardHTML).join(""):"<p>No cards here.</p>";
+const pc=game.inventory.filter(c=>c.locked);
+document.getElementById("pcCards").innerHTML=pc.length?pc.map(cardHTML).join(""):"<p>No PC cards yet.</p>";
+}
+function renderPacks(){
+document.getElementById("packGrid").innerHTML=Object.entries(packTypes).map(([key,p])=>`
+<div class="pack">
+<h3>${p.label}</h3>
+<p class="muted">${p.desc}</p>
+<p>Owned: <strong>${game.packs[key]||0}</strong></p>
+<button onclick="buyPack('${key}')">Buy - ${money(p.cost)}</button>
+<button class="secondary" onclick="ripPack('${key}',false)">Private Rip</button>
+<button class="secondary" onclick="ripPack('${key}',true)" ${game.liveCooldown>0?"disabled":""}>${game.liveCooldown>0?"Live Cooldown ("+game.liveCooldown+")":"Live Break"}</button>
+</div>`).join("");
+}
+function renderSets(){
+document.getElementById("setList").innerHTML=Object.entries(sets).map(([key,s])=>{
+const owned=new Set(game.inventory.filter(c=>c.setKey===key).map(c=>`${c.player}|${c.variant}`));
+const count=Math.min(owned.size,s.needed);
+const pct=Math.round(count/s.needed*100);
+return`
+<div class="set">
+<h3>${s.name}</h3>
+<p>${count}/${s.needed} complete</p>
+<div class="progress"><div class="bar" style="width:${pct}%"></div></div>
+</div>`;
+}).join("");
+}
+function renderMarket(){
+document.getElementById("marketCards").innerHTML=game.market.map(m=>`
+<div class="market">
+<h3>${m.label}</h3>
+<p>${m.sentiment} ${m.change>=0?"▲":"▼"} ${Math.abs(m.change)}%</p>
+</div>`).join("");
+document.getElementById("newsLog").innerHTML=game.newsLog.slice(0,8).map(n=>`<div class="logitem">${n}</div>`).join("")||"<p>No news yet.</p>";
+document.getElementById("tickerText").innerHTML=game.market.map(m=>`${m.label}: ${m.sentiment} ${m.change>=0?"▲":"▼"} ${Math.abs(m.change)}%`).join(" &nbsp; | &nbsp; ");
+}
+function showWishlist(){
+document.getElementById("settingsOutput").innerHTML=`
+<h3>Wishlist</h3>
+<div class="logitem"><strong>Players</strong><br>${game.wishlist.players.join("<br>")||"None"}</div>
+<div class="logitem"><strong>Variants</strong><br>${game.wishlist.variants.join("<br>")||"None"}</div>
+<div class="logitem"><strong>Sets</strong><br>${game.wishlist.sets.map(s=>sets[s]?.name||s).join("<br>")||"None"}</div>`;
+}
+function showEventLog(){
+document.getElementById("settingsOutput").innerHTML="<h3>Event Log</h3>"+game.eventLog.slice(0,25).map(e=>`<div class="logitem">${e}</div>`).join("");
+}
+function manualSave(){saveGame();event("Game saved.");}
+function manualLoad(){loadGame();event("Game loaded.");}
+function exportSave(){navigator.clipboard.writeText(JSON.stringify({game}));event("Save copied to clipboard.");}
+function importSave(){
+const data=prompt("Paste save data");
+if(!data)return;
+const obj=JSON.parse(data);
+game=obj.game;
+render();
+event("Save imported.");
+}
+function resetGame(){
+if(!confirm("Reset your entire game?"))return;
+localStorage.removeItem("nflCardShowSave");
+location.reload();
+}
+function saveGame(){
+localStorage.setItem("nflCardShowSave",JSON.stringify({game}));
+}
+function loadGame(){
+const save=localStorage.getItem("nflCardShowSave");
+if(!save)return;
+const obj=JSON.parse(save);
+game=obj.game;
+if(!game.market)game.market=JSON.parse(JSON.stringify(defaultMarket));
+if(!game.wishlist)game.wishlist={players:[],variants:[],sets:[]};
+if(!game.newsLog)game.newsLog=[];
+if(!game.eventLog)game.eventLog=[];
+if(!game.gradingQueue)game.gradingQueue=[];
+}
+function render(){
+document.getElementById("cash").textContent=money(game.cash);
+document.getElementById("rank").textContent=rank();
+document.getElementById("score").textContent=score();
+document.getElementById("day").textContent=game.day;
+renderPacks();
+renderCards();
+renderSets();
+renderMarket();
+saveGame();
+}
+loadGame();
+render();
+</script>
+</body>
+</html>
