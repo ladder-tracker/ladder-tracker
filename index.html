@@ -1,232 +1,132 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>NFL Card Show Grinder</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Card Business Sim</title>
 
 <style>
-*{
-  box-sizing:border-box;
-}
-
+*{box-sizing:border-box}
 body{
   margin:0;
   font-family:Arial,sans-serif;
   background:
-    radial-gradient(circle at top left,#263b73,transparent 30%),
-    radial-gradient(circle at bottom right,#4d1f63,transparent 30%),
+    radial-gradient(circle at top left,#203a74,transparent 30%),
+    radial-gradient(circle at bottom right,#4b1f5f,transparent 32%),
     #080b12;
   color:white;
 }
-
-.app{
-  max-width:1200px;
-  margin:auto;
-  padding:14px 14px 90px;
-}
-
+.app{max-width:1100px;margin:auto;padding:14px 14px 88px}
 header{
-  background:linear-gradient(135deg,#1d3cff,#8b31ff);
+  background:linear-gradient(135deg,#2442ff,#8b35ff);
+  border-radius:20px;
   padding:18px;
-  border-radius:18px;
   margin-bottom:14px;
-  box-shadow:0 10px 30px rgba(0,0,0,.35);
 }
-
-h1,h2,h3{
-  margin:0 0 8px;
-}
-
-.panel{
-  background:rgba(18,24,39,.95);
-  border:1px solid #2b344d;
+h1,h2,h3{margin:0 0 8px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.stat,.panel,.card,.box{
+  background:#151d30;
+  border:1px solid #303c5e;
   border-radius:16px;
-  padding:14px;
-  margin-bottom:14px;
-}
-
-.stats{
-  display:grid;
-  grid-template-columns:repeat(4,1fr);
-  gap:10px;
-}
-
-.stat{
-  background:#1a2235;
-  border:1px solid #33405f;
-  border-radius:14px;
   padding:12px;
-  text-align:center;
 }
-
-.stat small{
-  display:block;
-  color:#aab3d1;
-  margin-bottom:4px;
-}
-
-.stat strong{
-  font-size:18px;
-}
-
+.stat{text-align:center}
+.stat small{display:block;color:#aab3d1;font-size:11px}
+.stat strong{font-size:17px}
+.panel{margin-bottom:14px}
 .tabs{
   position:fixed;
   bottom:0;
   left:0;
   right:0;
-  z-index:20;
+  z-index:30;
   display:grid;
   grid-template-columns:repeat(6,1fr);
   gap:6px;
   padding:8px;
-  background:rgba(8,11,18,.95);
-  border-top:1px solid #2b344d;
+  background:rgba(8,11,18,.96);
+  border-top:1px solid #303c5e;
 }
-
-.tabs button{
-  padding:10px 4px;
-  font-size:11px;
-  border-radius:12px;
-  border:0;
-  color:white;
-  background:#1a2235;
-  font-weight:bold;
-}
-
-.tabs button.active{
-  background:linear-gradient(135deg,#ffd45a,#c77dff);
-  color:#111;
-}
-
 button{
   width:100%;
   border:0;
   border-radius:12px;
   padding:12px;
-  color:white;
+  margin-top:8px;
   font-weight:bold;
-  cursor:pointer;
-  background:linear-gradient(135deg,#3157ff,#9047ff);
+  color:white;
+  background:linear-gradient(135deg,#3157ff,#9147ff);
 }
-
-button.secondary{
-  background:#27314a;
-}
-
-button.danger{
-  background:#b83232;
-}
-
-button:disabled{
-  opacity:.4;
-  cursor:not-allowed;
-}
-
-.cards,
-.packs,
-.trade-grid,
-.market-grid,
-.sets{
-  display:grid;
-  gap:10px;
-}
-
-.cards{
-  grid-template-columns:repeat(auto-fill,minmax(185px,1fr));
-}
-
-@media(min-width:800px){
-  .packs,
-  .trade-grid,
-  .market-grid,
-  .sets{
-    grid-template-columns:repeat(2,1fr);
-  }
-}
-
-.card,
-.pack,
-.trade-card,
-.market-card,
-.set-card{
+button.secondary{background:#28334f}
+button.danger{background:#a83232}
+button:disabled{opacity:.45}
+.tabs button{
+  margin:0;
+  padding:10px 4px;
   background:#1a2235;
-  border:1px solid #33405f;
-  border-radius:14px;
-  padding:12px;
+  font-size:11px;
 }
-
-.Common{
-  border-color:#777;
+.tabs button.active{
+  background:linear-gradient(135deg,#ffd45a,#d678ff);
+  color:#111;
 }
-
-.Uncommon{
-  border-color:#4caf50;
+.screen{display:none}
+.screen.active{display:block}
+.grid,.cards{display:grid;gap:10px}
+.cards{grid-template-columns:repeat(auto-fill,minmax(170px,1fr))}
+@media(min-width:800px){
+  .grid{grid-template-columns:repeat(2,1fr)}
 }
-
-.Rare{
-  border-color:#3d7bff;
-}
-
-.Ultra{
-  border-color:#b14cff;
-  box-shadow:0 0 18px rgba(177,76,255,.22);
-}
-
-.Grail{
-  border-color:gold;
-  box-shadow:0 0 18px rgba(255,215,0,.28);
-}
-
+.card{cursor:pointer}
+.Common{border-color:#777}
+.Uncommon{border-color:#4caf50}
+.Rare{border-color:#3d7bff}
+.Ultra{border-color:#b14cff;box-shadow:0 0 14px rgba(177,76,255,.25)}
+.Grail{border-color:gold;box-shadow:0 0 18px rgba(255,215,0,.3)}
 .badge{
   display:inline-block;
-  font-size:11px;
-  font-weight:bold;
-  padding:4px 7px;
+  padding:4px 8px;
   border-radius:999px;
   background:#303a58;
+  font-size:11px;
+  font-weight:bold;
   margin-bottom:6px;
 }
-
-.muted{
-  color:#aab3d1;
-  font-size:13px;
+.muted{color:#aab3d1;font-size:13px}
+.value{font-size:22px;font-weight:bold;margin-top:8px}
+.locked{color:#ffd86b;font-weight:bold}
+.good{color:#75ff9d;font-weight:bold}
+.bad{color:#ff9f9f;font-weight:bold}
+.ticker{
+  overflow:hidden;
+  white-space:nowrap;
+  background:#080b12;
+  border:1px solid #303c5e;
+  border-radius:999px;
+  padding:10px;
+  margin-top:10px;
 }
-
-.value{
-  font-size:22px;
-  font-weight:bold;
-  margin-top:8px;
+.ticker span{
+  display:inline-block;
+  padding-left:100%;
+  animation:ticker 26s linear infinite;
 }
-
-.locked{
-  color:#ffd86b;
-  font-weight:bold;
+@keyframes ticker{
+  0%{transform:translateX(0)}
+  100%{transform:translateX(-100%)}
 }
-
-.tabscreen{
-  display:none;
-}
-
-.tabscreen.active{
-  display:block;
-}
-
 .modal{
   display:none;
   position:fixed;
   inset:0;
   z-index:100;
-  background:rgba(0,0,0,.72);
+  background:rgba(0,0,0,.75);
   align-items:center;
   justify-content:center;
   padding:16px;
 }
-
-.modal.active{
-  display:flex;
-}
-
+.modal.active{display:flex}
 .modal-box{
   width:100%;
   max-width:560px;
@@ -234,20 +134,33 @@ button:disabled{
   overflow:auto;
   background:#121827;
   border:1px solid #394565;
+  border-radius:20px;
+  padding:16px;
+}
+.modal-actions{display:grid;gap:8px;margin-top:12px}
+.toast{
+  display:none;
+  position:fixed;
+  top:14px;
+  left:50%;
+  transform:translateX(-50%);
+  z-index:1000;
+  min-width:280px;
+  max-width:92vw;
+  text-align:center;
+  background:#121827;
+  border:1px solid #4b5b88;
   border-radius:18px;
   padding:16px;
 }
-
-.modal-actions{
-  display:grid;
-  gap:8px;
-  margin-top:12px;
+.toast.show{display:block;animation:fade 3.5s forwards}
+@keyframes fade{
+  0%{opacity:0;transform:translateX(-50%) translateY(-10px)}
+  10%{opacity:1;transform:translateX(-50%)}
+  80%{opacity:1}
+  100%{opacity:0}
 }
-
-.flip-wrap{
-  perspective:1200px;
-}
-
+.flip-wrap{perspective:1200px}
 .flip-card{
   width:200px;
   height:280px;
@@ -256,11 +169,7 @@ button:disabled{
   transform-style:preserve-3d;
   transition:transform .8s ease;
 }
-
-.flip-card.flipped{
-  transform:rotateY(180deg);
-}
-
+.flip-card.flipped{transform:rotateY(180deg)}
 .face{
   position:absolute;
   inset:0;
@@ -271,1322 +180,583 @@ button:disabled{
   justify-content:center;
   text-align:center;
   padding:12px;
-  border:2px solid rgba(255,255,255,.1);
 }
-
-.front{
-  background:linear-gradient(135deg,#3157ff,#9047ff);
-}
-
-.back{
-  transform:rotateY(180deg);
-  flex-direction:column;
-}
-
-.back.Common{
-  background:#444;
-}
-
-.back.Uncommon{
-  background:#1f6d39;
-}
-
-.back.Rare{
-  background:#2247b7;
-}
-
-.back.Ultra{
-  background:#702db0;
-}
-
-.back.Grail{
-  background:linear-gradient(135deg,#ffd54f,#c58b00);
-  color:#111;
-}
-
-.chat{
-  background:#080b12;
-  border-radius:12px;
-  padding:10px;
-  border:1px solid #33405f;
-  margin-top:10px;
-  font-size:13px;
-}
-
-.toast{
-  position:fixed;
-  top:14px;
-  left:50%;
-  transform:translateX(-50%);
-  z-index:1000;
-  background:#121827;
-  border:1px solid #4b5b88;
-  border-radius:18px;
-  padding:16px;
-  min-width:280px;
-  text-align:center;
-  display:none;
-  box-shadow:0 10px 40px rgba(0,0,0,.45);
-}
-
-.toast.show{
-  display:block;
-  animation:fade 3.5s forwards;
-}
-
-@keyframes fade{
-  0%{
-    opacity:0;
-    transform:translateX(-50%) translateY(-10px);
-  }
-
-  10%{
-    opacity:1;
-    transform:translateX(-50%) translateY(0);
-  }
-
-  80%{
-    opacity:1;
-  }
-
-  100%{
-    opacity:0;
-  }
-}
-
-.ticker{
-  overflow:hidden;
-  white-space:nowrap;
-  background:#080b12;
-  border:1px solid #33405f;
-  border-radius:999px;
-  padding:10px;
-}
-
-.ticker span{
-  display:inline-block;
-  padding-left:100%;
-  animation:ticker 24s linear infinite;
-}
-
-@keyframes ticker{
-  0%{
-    transform:translateX(0);
-  }
-
-  100%{
-    transform:translateX(-100%);
-  }
-}
+.front{background:linear-gradient(135deg,#3157ff,#9047ff)}
+.back{transform:rotateY(180deg);flex-direction:column}
+.back.Common{background:#444}
+.back.Uncommon{background:#1f6d39}
+.back.Rare{background:#2247b7}
+.back.Ultra{background:#702db0}
+.back.Grail{background:linear-gradient(135deg,#ffd54f,#c58b00);color:#111}
 </style>
 </head>
 
 <body>
-
 <div id="toast" class="toast"></div>
 
 <div id="packModal" class="modal">
   <div class="modal-box" style="text-align:center">
-
-    <h2 id="packTitle">Opening Pack</h2>
-
+    <h2>Opening Product</h2>
     <div class="flip-wrap">
-
       <div id="flipCard" class="flip-card">
-
-        <div class="face front">
-          SEALED PACK
-        </div>
-
-        <div id="flipBack" class="face back">
-        </div>
-
+        <div class="face front">SEALED PRODUCT</div>
+        <div id="flipBack" class="face back"></div>
       </div>
-
     </div>
-
-    <div id="liveChat" class="chat" style="display:none"></div>
-
-    <button id="revealBtn" onclick="finishReveal()">
-      Reveal
-    </button>
-
+    <button id="revealBtn" onclick="finishReveal()">Reveal</button>
   </div>
 </div>
 
 <div id="cardModal" class="modal">
   <div class="modal-box">
-
     <h2 id="cardTitle"></h2>
-
     <div id="cardBody"></div>
-
     <div id="cardActions" class="modal-actions"></div>
-
-    <button class="secondary" onclick="closeCardModal()">
-      Close
-    </button>
-
+    <button class="secondary" onclick="closeCardModal()">Close</button>
   </div>
 </div>
 
 <div class="app">
 
 <header>
-  <h1>NFL Card Show Grinder</h1>
-
+  <h1>Trading Card Business Sim</h1>
+  <p class="muted">Buy inventory. Rip or hold. Grade. List on eBay. Trade on Reddit. Time the market.</p>
   <div class="stats">
-
-    <div class="stat">
-      <small>Cash</small>
-      <strong id="cash"></strong>
-    </div>
-
-    <div class="stat">
-      <small>Score</small>
-      <strong id="score"></strong>
-    </div>
-
-    <div class="stat">
-      <small>Followers</small>
-      <strong id="followers"></strong>
-    </div>
-
-    <div class="stat">
-      <small>Day</small>
-      <strong id="day"></strong>
-    </div>
-
+    <div class="stat"><small>Cash</small><strong id="cash"></strong></div>
+    <div class="stat"><small>Inventory</small><strong id="inventoryValue"></strong></div>
+    <div class="stat"><small>Reputation</small><strong id="rep"></strong></div>
+    <div class="stat"><small>Day</small><strong id="day"></strong></div>
   </div>
+  <div class="ticker"><span id="ticker"></span></div>
 </header>
 
-<section id="tabPacks" class="tabscreen active">
-
+<section id="tabBuy" class="screen active">
   <div class="panel">
-
-    <h2>Packs</h2>
-
-    <div class="packs" id="packGrid"></div>
-
+    <h2>Buy Inventory</h2>
+    <div class="grid" id="buyGrid"></div>
   </div>
-
 </section>
 
-<section id="tabCards" class="tabscreen">
-
+<section id="tabCards" class="screen">
   <div class="panel">
-
-    <h2>Inventory</h2>
-
-    <div class="cards" id="inventory"></div>
-
-  </div>
-
-</section>
-
-<section id="tabPC" class="tabscreen">
-
-  <div class="panel">
-
-    <h2>Personal Collection</h2>
-
-    <div class="cards" id="pcInventory"></div>
-
-  </div>
-
-</section>
-
-<section id="tabSets" class="tabscreen">
-
-  <div class="panel">
-
-    <h2>Sets</h2>
-
-    <button class="secondary" onclick="sellAllCommons()">
-      Sell All Commons
-    </button>
-
-    <button class="secondary" onclick="sellAllCommonUncommon()">
-      Sell Common + Uncommon
-    </button>
-
-    <button class="secondary" onclick="sellAllRawUnder(100)">
-      Sell Raw Under $100
-    </button>
-
-    <button class="secondary" onclick="sellDuplicates()">
-      Sell Duplicates
-    </button>
-
+    <h2>Cards</h2>
+    <button class="secondary" onclick="sellAllCommons()">Quick Sell Commons</button>
+    <button class="secondary" onclick="sellAllUnder(100)">Quick Sell Raw Under $100</button>
+    <button class="secondary" onclick="sellDuplicates()">Sell Duplicates</button>
     <br><br>
-
-    <div class="sets" id="setList"></div>
-
+    <div class="cards" id="cards"></div>
   </div>
-
 </section>
 
-<section id="tabTrading" class="tabscreen">
-
+<section id="tabListings" class="screen">
   <div class="panel">
-
-    <h2>Trading Floor</h2>
-
-    <button onclick="generateTrades()">
-      Refresh Dealers
-    </button>
-
-    <br><br>
-
-    <div class="trade-grid" id="tradeGrid"></div>
-
+    <h2>eBay Listings</h2>
+    <p class="muted">Listings take time. Auctions can spike or collapse based on market timing.</p>
+    <div class="grid" id="listings"></div>
   </div>
-
 </section>
 
-<section id="tabMarket" class="tabscreen">
-
+<section id="tabTrades" class="screen">
   <div class="panel">
+    <h2>Reddit Trade Threads</h2>
+    <p class="muted">Trades take patience. Some collectors overpay. Some waste your time.</p>
+    <button onclick="refreshTrades()">Browse Trade Offers</button>
+    <div class="grid" id="trades"></div>
+  </div>
+</section>
 
+<section id="tabGrading" class="screen">
+  <div class="panel">
+    <h2>Grading Orders</h2>
+    <div class="grid" id="grading"></div>
+  </div>
+</section>
+
+<section id="tabMarket" class="screen">
+  <div class="panel">
     <h2>Market</h2>
-
-    <div class="ticker">
-      <span id="tickerText"></span>
-    </div>
-
-    <br>
-
-    <div class="market-grid" id="marketGrid"></div>
-
-    <br>
-
-    <button class="secondary" onclick="nextDay()">
-      Sleep / Next Day
-    </button>
-
+    <button class="secondary" onclick="nextDay()">Sleep / Next Day</button>
+    <div class="grid" id="market"></div>
   </div>
-
 </section>
 
 </div>
 
 <nav class="tabs">
-
-  <button id="navPacks" class="active"
-    onclick="showTab('Packs')">
-    Packs
-  </button>
-
-  <button id="navCards"
-    onclick="showTab('Cards')">
-    Cards
-  </button>
-
-  <button id="navPC"
-    onclick="showTab('PC')">
-    PC
-  </button>
-
-  <button id="navSets"
-    onclick="showTab('Sets')">
-    Sets
-  </button>
-
-  <button id="navTrading"
-    onclick="showTab('Trading')">
-    Trading
-  </button>
-
-  <button id="navMarket"
-    onclick="showTab('Market')">
-    Market
-  </button>
-
+  <button id="navBuy" class="active" onclick="showTab('Buy')">Buy</button>
+  <button id="navCards" onclick="showTab('Cards')">Cards</button>
+  <button id="navListings" onclick="showTab('Listings')">eBay</button>
+  <button id="navTrades" onclick="showTab('Trades')">Reddit</button>
+  <button id="navGrading" onclick="showTab('Grading')">Grade</button>
+  <button id="navMarket" onclick="showTab('Market')">Market</button>
 </nav>
 
 <script>
-const rarityRank={
-  Common:1,
-  Uncommon:2,
-  Rare:3,
-  Ultra:4,
-  Grail:5
-};
+const rarityRank={Common:1,Uncommon:2,Rare:3,Ultra:4,Grail:5};
 
-const packTypes={
-  retail:{
-    label:"Retail Pack",
-    cost:15,
-    boost:.65,
-    desc:"Cheap set fillers."
-  },
-
-  hobby:{
-    label:"Hobby Pack",
-    cost:50,
-    boost:1,
-    desc:"Balanced odds."
-  },
-
-  premium:{
-    label:"Premium Box",
-    cost:250,
-    boost:2.2,
-    desc:"Higher-end parallels."
-  },
-
-  breaker:{
-    label:"Breaker Case",
-    cost:1000,
-    boost:4.5,
-    desc:"Massive ceiling."
-  }
+const products={
+  retail:{label:"Retail Blaster",cost:30,boost:.6,desc:"Cheap. Usually junk. Rare hits possible."},
+  hobby:{label:"Hobby Box",cost:175,boost:1,desc:"Balanced risk/reward."},
+  premium:{label:"Premium Box",cost:600,boost:2.1,desc:"Big upside. Expensive misses."},
+  collection:{label:"Local Collection",cost:250,boost:1.4,desc:"Garage sale/private lot. Unknown condition."}
 };
 
 const players=[
-  "Patrick Mahomes",
-  "Josh Allen",
-  "Joe Burrow",
-  "Caleb Williams",
-  "Jayden Daniels",
-  "Drake Maye",
-  "Bo Nix",
-  "Marvin Harrison Jr.",
-  "Malik Nabers",
-  "Brock Bowers",
-  "Tom Brady",
-  "Peyton Manning",
-  "Randy Moss",
-  "Jerry Rice",
-  "Justin Jefferson",
-  "Lamar Jackson",
-  "Bijan Robinson",
-  "Puka Nacua",
-  "C.J. Stroud",
-  "Micah Parsons"
+  "Patrick Mahomes","Josh Allen","Joe Burrow","Caleb Williams","Jayden Daniels",
+  "Drake Maye","Bo Nix","Marvin Harrison Jr.","Malik Nabers","Brock Bowers",
+  "Tom Brady","Peyton Manning","Jerry Rice","Randy Moss","Justin Jefferson",
+  "Lamar Jackson","Bijan Robinson","Puka Nacua","C.J. Stroud","Micah Parsons"
 ];
 
 const variants=[
   {name:"Base",mult:1},
   {name:"Silver",mult:1.3},
-  {name:"Blue",mult:1.8},
-  {name:"Red",mult:2.2},
-  {name:"Gold",mult:4},
-  {name:"Black",mult:10},
-  {name:"Auto",mult:3},
-  {name:"Patch Auto",mult:5}
+  {name:"Blue /99",mult:1.8},
+  {name:"Red /49",mult:2.3},
+  {name:"Gold /10",mult:4.5},
+  {name:"Black 1/1",mult:12},
+  {name:"Auto",mult:3.2},
+  {name:"Patch Auto",mult:5.5}
 ];
-
-const sets={
-  rookies:{
-    name:"Rookie Chase",
-    needed:10
-  },
-
-  legends:{
-    name:"Legends Collection",
-    needed:8
-  },
-
-  grails:{
-    name:"Grail Collection",
-    needed:5
-  }
-};
-
-let game={
-  cash:500,
-  followers:0,
-  score:0,
-  day:1,
-  liveCooldown:0,
-
-  packs:{
-    retail:0,
-    hobby:3,
-    premium:0,
-    breaker:0
-  },
-
-  inventory:[],
-  grading:[]
-};
 
 let market=[
-  "Rookie QB Market ▲ 12%",
-  "Gold /10 Market ▲ 8%",
-  "Patch Autos Stable",
-  "Veteran Autos ▼ 4%",
-  "Legend Market ▲ 5%"
+  {label:"Rookie QB Market",change:5,target:"rookie"},
+  {label:"Gold Parallels",change:8,target:"Gold"},
+  {label:"Veteran Autos",change:-3,target:"Auto"},
+  {label:"Legend Market",change:4,target:"legend"}
 ];
 
-let currentPack=null;
+let game={
+  cash:1000,
+  day:1,
+  rep:10,
+  inventory:[],
+  listings:[],
+  grading:[],
+  trades:[]
+};
 
-function money(v){
-  return "$"+Math.floor(v).toLocaleString();
-}
+let currentCard=null;
 
-function rand(min,max){
-  return Math.floor(Math.random()*(max-min+1))+min;
-}
+function money(v){return "$"+Math.floor(v).toLocaleString();}
+function rand(min,max){return Math.floor(Math.random()*(max-min+1))+min;}
+function pick(a){return a[Math.floor(Math.random()*a.length)];}
 
-function pick(arr){
-  return arr[Math.floor(Math.random()*arr.length)];
+function toast(msg){
+  const t=document.getElementById("toast");
+  t.innerHTML=msg;
+  t.className="toast show";
+  setTimeout(()=>t.className="toast",3500);
 }
 
 function showTab(name){
-
-  document.querySelectorAll(".tabscreen")
-    .forEach(t=>t.classList.remove("active"));
-
-  document.querySelectorAll(".tabs button")
-    .forEach(b=>b.classList.remove("active"));
-
-  document.getElementById("tab"+name)
-    .classList.add("active");
-
-  document.getElementById("nav"+name)
-    .classList.add("active");
+  document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));
+  document.querySelectorAll(".tabs button").forEach(b=>b.classList.remove("active"));
+  document.getElementById("tab"+name).classList.add("active");
+  document.getElementById("nav"+name).classList.add("active");
 }
 
-function rarityFromRoll(boost){
+function inventoryValue(){
+  return game.inventory.reduce((s,c)=>s+c.value,0);
+}
 
-  const roll=rand(1,1000);
+function buyProduct(type){
+  const p=products[type];
+  if(game.cash<p.cost){toast("Not enough cash.");return;}
+  game.cash-=p.cost;
 
-  if(roll<=2*boost)
-    return "Grail";
+  currentCard=generateCard(type);
 
-  if(roll<=20*boost)
-    return "Ultra";
+  document.getElementById("packModal").classList.add("active");
+  document.getElementById("flipCard").classList.remove("flipped");
+  document.getElementById("revealBtn").innerText="Reveal";
+  document.getElementById("revealBtn").onclick=finishReveal;
 
-  if(roll<=100*boost)
-    return "Rare";
+  render();
+}
 
-  if(roll<=350*boost)
-    return "Uncommon";
-
+function rarityRoll(boost){
+  const r=rand(1,10000);
+  if(r<=8*boost)return "Grail";
+  if(r<=90*boost)return "Ultra";
+  if(r<=700*boost)return "Rare";
+  if(r<=2500*boost)return "Uncommon";
   return "Common";
 }
 
-function generateCard(type,live=false){
+function generateCard(type){
+  const p=products[type];
+  const rarity=rarityRoll(p.boost);
+  const variant=pick(variants);
 
-  const rarity=
-    rarityFromRoll(packTypes[type].boost);
-
-  const variant=
-    pick(variants);
-
-  let value;
-
-  if(rarity==="Grail")
-    value=rand(18000,100000);
-
-  else if(rarity==="Ultra")
-    value=rand(1500,10000);
-
-  else if(rarity==="Rare")
-    value=rand(250,1500);
-
-  else if(rarity==="Uncommon")
-    value=rand(40,250);
-
-  else
-    value=rand(2,40);
+  let value=0;
+  if(rarity==="Grail")value=rand(8000,45000);
+  else if(rarity==="Ultra")value=rand(700,4500);
+  else if(rarity==="Rare")value=rand(100,700);
+  else if(rarity==="Uncommon")value=rand(20,120);
+  else value=rand(1,25);
 
   value*=variant.mult;
 
-  if(live && rarityRank[rarity]>=3)
-    value*=1.15;
-
-  value=Math.floor(value);
+  const player=pick(players);
+  if(["Patrick Mahomes","Josh Allen","Joe Burrow","Caleb Williams","Jayden Daniels","C.J. Stroud","Tom Brady"].includes(player)){
+    value*=1.6;
+  }
 
   return{
-    id:
-      Date.now()+
-      Math.random(),
-
-    player:pick(players),
-
-    rarity,
-
+    id:Date.now()+Math.random(),
+    player,
     variant:variant.name,
-
-    setKey:
-      rarity==="Grail"
-      ? "grails"
-      : pick(["rookies","legends"]),
-
-    value,
-
+    rarity,
+    value:Math.floor(value),
+    rawValue:Math.floor(value),
     graded:false,
-
     grade:null,
-
     locked:false,
-
+    listed:false,
     atGrading:false
   };
 }
 
-function buyPack(type){
-
-  const pack=packTypes[type];
-
-  if(game.cash<pack.cost){
-    return;
-  }
-
-  game.cash-=pack.cost;
-
-  game.packs[type]++;
-
-  render();
-}
-
-function openPack(type,live){
-
-  if(game.packs[type]<=0){
-    return;
-  }
-
-  if(live && game.liveCooldown>0){
-    return;
-  }
-
-  game.packs[type]--;
-
-  currentPack={
-    live,
-    card:generateCard(type,live)
-  };
-
-  document
-    .getElementById("packModal")
-    .classList.add("active");
-
-  document
-    .getElementById("flipCard")
-    .classList.remove("flipped");
-
-  document
-    .getElementById("liveChat")
-    .style.display="none";
-}
-
 function finishReveal(){
-
-  const c=currentPack.card;
-
-  const back=
-    document.getElementById("flipBack");
-
-  back.className=
-    `face back ${c.rarity}`;
-
+  const c=currentCard;
+  const back=document.getElementById("flipBack");
+  back.className="face back "+c.rarity;
   back.innerHTML=`
-    <div style="font-size:42px">
-      🏈
-    </div>
-
-    <div style="font-size:18px;font-weight:bold">
-      ${c.player}
-    </div>
-
-    <div>
-      ${c.variant}
-    </div>
-
-    <div style="margin-top:8px">
-      ${c.rarity}
-    </div>
-
-    <div class="value">
-      ${money(c.value)}
-    </div>
+    <div style="font-size:42px">🏈</div>
+    <strong>${c.player}</strong>
+    <div>${c.variant}</div>
+    <div>${c.rarity}</div>
+    <div class="value">${money(c.value)}</div>
   `;
 
-  setTimeout(()=>{
-    document
-      .getElementById("flipCard")
-      .classList.add("flipped");
-  },80);
+  setTimeout(()=>document.getElementById("flipCard").classList.add("flipped"),80);
 
   game.inventory.push(c);
 
-  if(currentPack.live){
+  document.getElementById("revealBtn").innerText="Close";
+  document.getElementById("revealBtn").onclick=function(){
+    document.getElementById("packModal").classList.remove("active");
+    render();
+  };
 
-    game.liveCooldown=2;
-
-    const chat=
-      document.getElementById("liveChat");
-
-    chat.style.display="block";
-
-    if(c.rarity==="Grail"){
-
-      chat.innerHTML=
-        "CHAT GOING NUTS";
-
-      game.followers+=rand(2000,5000);
-
-      c.value=
-        Math.floor(c.value*1.4);
-
-    } else if(rarityRank[c.rarity]>=4){
-
-      chat.innerHTML=
-        "W HIT";
-
-      game.followers+=rand(400,1200);
-
-    } else if(rarityRank[c.rarity]>=3){
-
-      chat.innerHTML=
-        "Solid pull";
-
-      game.followers+=rand(100,400);
-
-    } else {
-
-      chat.innerHTML=
-        "Chat went quiet";
-
-    }
-  }
-
+  if(c.rarity==="Grail")toast("Grail hit.");
   render();
-
-  document
-    .getElementById("revealBtn")
-    .innerText="Close";
-
-  document
-    .getElementById("revealBtn")
-    .onclick=function(){
-
-      document
-        .getElementById("packModal")
-        .classList.remove("active");
-
-      document
-        .getElementById("revealBtn")
-        .innerText="Reveal";
-
-      document
-        .getElementById("revealBtn")
-        .onclick=finishReveal;
-    };
-}
-
-function gradeLabel(c){
-
-  if(!c.graded)
-    return "Raw";
-
-  if(c.grade===10)
-    return "💎 PSA 10";
-
-  if(c.grade===9)
-    return "✨ PSA 9";
-
-  if(c.grade===8)
-    return "✅ PSA 8";
-
-  return "⚠️ PSA "+c.grade;
 }
 
 function cardHTML(c){
-
   return`
-    <div class="card ${c.rarity}"
-      onclick="openCard('${c.id}')">
-
-      <span class="badge">
-        ${c.rarity}
-      </span>
-
-      <div style="font-size:34px">
-        🏈
-      </div>
-
-      <h3>
-        ${c.player}
-      </h3>
-
-      <div class="muted">
-        ${c.variant}
-      </div>
-
-      <div class="muted">
-        ${gradeLabel(c)}
-      </div>
-
-      ${
-        c.locked
-        ? `<div class="locked">
-            🔒 PC Hold
-           </div>`
-        : ""
-      }
-
-      <div class="value">
-        ${money(c.value)}
-      </div>
-
+    <div class="card ${c.rarity}" onclick="openCard('${c.id}')">
+      <span class="badge">${c.rarity}</span>
+      <div style="font-size:34px">🏈</div>
+      <h3>${c.player}</h3>
+      <div class="muted">${c.variant}</div>
+      <div class="muted">${gradeText(c)}</div>
+      ${c.locked?'<div class="locked">🔒 PC Hold</div>':""}
+      ${c.listed?'<div class="good">Listed on eBay</div>':""}
+      ${c.atGrading?'<div class="good">At grading</div>':""}
+      <div class="value">${money(c.value)}</div>
     </div>
   `;
+}
+
+function gradeText(c){
+  if(!c.graded)return "Raw";
+  if(c.grade===10)return "💎 PSA 10";
+  if(c.grade===9)return "✨ PSA 9";
+  if(c.grade===8)return "✅ PSA 8";
+  return "⚠️ PSA "+c.grade;
 }
 
 function openCard(id){
+  const c=game.inventory.find(x=>x.id==id);
+  document.getElementById("cardTitle").innerText=c.player;
+  document.getElementById("cardBody").innerHTML=`
+    <p>${c.variant}</p>
+    <p>${c.rarity}</p>
+    <p>${gradeText(c)}</p>
+    <p class="value">${money(c.value)}</p>
+  `;
 
-  const c=
-    game.inventory.find(
-      x=>x.id==id
-    );
+  document.getElementById("cardActions").innerHTML=`
+    <button onclick="listEbay('${c.id}')" ${c.listed||c.locked||c.atGrading?"disabled":""}>List on eBay</button>
+    <button onclick="submitGrade('${c.id}')" ${c.graded||c.atGrading||c.listed?"disabled":""}>Submit for Grading - $25</button>
+    <button class="secondary" onclick="quickSell('${c.id}')" ${c.locked||c.listed||c.atGrading?"disabled":""}>Sell to Card Shop Now</button>
+    <button class="secondary" onclick="toggleLock('${c.id}')">${c.locked?"Unlock PC":"Lock PC"}</button>
+  `;
 
-  document
-    .getElementById("cardTitle")
-    .innerText=c.player;
-
-  document
-    .getElementById("cardBody")
-    .innerHTML=`
-      <p>${c.variant}</p>
-
-      <p>${c.rarity}</p>
-
-      <p>${gradeLabel(c)}</p>
-
-      <p class="value">
-        ${money(c.value)}
-      </p>
-    `;
-
-  document
-    .getElementById("cardActions")
-    .innerHTML=`
-      <button onclick="submitGrade('${c.id}')"
-        ${
-          c.graded || c.atGrading
-          ? "disabled"
-          : ""
-        }>
-        Submit For Grading
-      </button>
-
-      <button class="secondary"
-        onclick="togglePC('${c.id}')">
-        ${
-          c.locked
-          ? "Unlock PC"
-          : "Lock To PC"
-        }
-      </button>
-
-      <button class="secondary"
-        onclick="sellCard('${c.id}')"
-        ${
-          c.locked
-          ? "disabled"
-          : ""
-        }>
-        Sell Card
-      </button>
-    `;
-
-  document
-    .getElementById("cardModal")
-    .classList.add("active");
+  document.getElementById("cardModal").classList.add("active");
 }
 
 function closeCardModal(){
-
-  document
-    .getElementById("cardModal")
-    .classList.remove("active");
+  document.getElementById("cardModal").classList.remove("active");
 }
 
-function togglePC(id){
+function listEbay(id){
+  const c=game.inventory.find(x=>x.id==id);
+  c.listed=true;
+  game.listings.push({
+    cardId:id,
+    days:rand(2,5),
+    asking:Math.floor(c.value*rand(95,135)/100)
+  });
+  toast("Listed on eBay. Sale will take time.");
+  closeCardModal();
+  render();
+}
 
-  const c=
-    game.inventory.find(
-      x=>x.id==id
-    );
+function quickSell(id){
+  const c=game.inventory.find(x=>x.id==id);
+  const payout=Math.floor(c.value*.7);
+  game.cash+=payout;
+  game.inventory=game.inventory.filter(x=>x.id!=id);
+  toast("Card shop paid "+money(payout)+".");
+  closeCardModal();
+  render();
+}
 
+function toggleLock(id){
+  const c=game.inventory.find(x=>x.id==id);
   c.locked=!c.locked;
-
-  render();
-
   closeCardModal();
-}
-
-function sellCard(id){
-
-  const c=
-    game.inventory.find(
-      x=>x.id==id
-    );
-
-  if(c.locked)
-    return;
-
-  game.cash+=
-    Math.floor(c.value*.9);
-
-  game.inventory=
-    game.inventory.filter(
-      x=>x.id!=id
-    );
-
   render();
-
-  closeCardModal();
 }
 
 function submitGrade(id){
-
-  const c=
-    game.inventory.find(
-      x=>x.id==id
-    );
-
-  if(game.cash<25)
-    return;
-
+  const c=game.inventory.find(x=>x.id==id);
+  if(game.cash<25){toast("Not enough cash.");return;}
   game.cash-=25;
-
   c.atGrading=true;
-
-  game.grading.push({
-    cardId:id,
-    days:rand(2,3)
-  });
-
-  render();
-
+  game.grading.push({cardId:id,days:rand(3,7)});
+  toast("Submitted to grading.");
   closeCardModal();
+  render();
 }
 
-function gradingPopup(card){
+function revealGrade(c){
+  const r=rand(1,100);
+  let g;
+  if(r<=3)g=10;
+  else if(r<=23)g=9;
+  else if(r<=68)g=8;
+  else if(r<=88)g=7;
+  else g=6;
 
-  const toast=
-    document.getElementById("toast");
+  c.grade=g;
+  c.graded=true;
+  c.atGrading=false;
 
-  toast.innerHTML=`
-    <div style="font-size:44px">
-      ${
-        card.grade===10
-        ? "💎"
-        : "📦"
-      }
-    </div>
+  if(g===10)c.value=Math.floor(c.rawValue*2.8);
+  else if(g===9)c.value=Math.floor(c.rawValue*1.45);
+  else if(g===8)c.value=Math.floor(c.rawValue*1.05);
+  else c.value=Math.floor(c.rawValue*.7);
 
-    <div style="font-size:18px;font-weight:bold">
-      Grading Return
-    </div>
-
-    <div style="margin-top:8px">
-      ${card.player}
-    </div>
-
-    <div style="margin-top:8px">
-      PSA ${card.grade}
-    </div>
-  `;
-
-  toast.className="toast show";
-
-  setTimeout(()=>{
-    toast.className="toast";
-  },3500);
-}
-
-function revealGrade(card){
-
-  const roll=rand(1,100);
-
-  let grade;
-
-  if(roll<=10)
-    grade=6;
-
-  else if(roll<=30)
-    grade=7;
-
-  else if(roll<=65)
-    grade=8;
-
-  else if(roll<=90)
-    grade=9;
-
-  else
-    grade=10;
-
-  card.grade=grade;
-
-  card.graded=true;
-
-  card.atGrading=false;
-
-  if(grade===10)
-    card.value*=3;
-
-  else if(grade===9)
-    card.value*=1.8;
-
-  else if(grade===8)
-    card.value*=1.2;
-
-  else
-    card.value*=.75;
-
-  card.value=
-    Math.floor(card.value);
-
-  gradingPopup(card);
+  toast(`${c.player} returned ${gradeText(c)}.`);
 }
 
 function nextDay(){
-
   game.day++;
+  game.cash-=15;
 
-  if(game.liveCooldown>0)
-    game.liveCooldown--;
+  processListings();
+  processGrading();
+  rerollMarket();
+  applyMarket();
 
-  game.cash-=20;
+  render();
+}
 
-  game.grading.forEach(g=>{
-    g.days--;
+function processListings(){
+  game.listings.forEach(l=>l.days--);
+
+  const ready=game.listings.filter(l=>l.days<=0);
+  game.listings=game.listings.filter(l=>l.days>0);
+
+  ready.forEach(l=>{
+    const c=game.inventory.find(x=>x.id==l.cardId);
+    if(!c)return;
+
+    const chance=rand(1,100);
+    if(chance<=75){
+      const fee=Math.floor(l.asking*.13);
+      const payout=l.asking-fee;
+      game.cash+=payout;
+      game.rep++;
+      game.inventory=game.inventory.filter(x=>x.id!=c.id);
+      toast(`eBay sale: ${c.player} sold for ${money(payout)} after fees.`);
+    }else{
+      c.listed=false;
+      toast(`eBay listing ended unsold: ${c.player}.`);
+    }
   });
+}
 
-  const ready=
-    game.grading.filter(
-      g=>g.days<=0
-    );
-
-  game.grading=
-    game.grading.filter(
-      g=>g.days>0
-    );
+function processGrading(){
+  game.grading.forEach(g=>g.days--);
+  const ready=game.grading.filter(g=>g.days<=0);
+  game.grading=game.grading.filter(g=>g.days>0);
 
   ready.forEach(g=>{
-
-    const card=
-      game.inventory.find(
-        c=>c.id==g.cardId
-      );
-
-    if(card)
-      revealGrade(card);
+    const c=game.inventory.find(x=>x.id==g.cardId);
+    if(c)revealGrade(c);
   });
-
-  render();
 }
 
-function generateTrades(){
-
-  const dealers=[
-    {
-      name:"Rainbow Hunter",
-      wants:"Gold / Black / Patch",
-      offer:"Cash + Packs"
-    },
-
-    {
-      name:"Set Builder",
-      wants:"Commons + Rookies",
-      offer:"Trade Cards"
-    },
-
-    {
-      name:"Investor",
-      wants:"Ultra + Grails",
-      offer:"Premium Cash"
-    }
+function refreshTrades(){
+  const offers=[
+    "Collector wants graded QBs and offers sealed wax.",
+    "Reddit user wants low-end rookies and offers 80% comp cash.",
+    "Trade partner overvalues legends today.",
+    "Someone is hunting Gold parallels and overpaying.",
+    "Suspicious new account offers a high-end swap. Risky."
   ];
 
-  document
-    .getElementById("tradeGrid")
-    .innerHTML=
-      dealers.map(d=>`
-        <div class="trade-card">
+  game.trades=offers.map(o=>({text:o}));
 
-          <h3>${d.name}</h3>
-
-          <p>
-            Wants:
-            ${d.wants}
-          </p>
-
-          <p>
-            Offering:
-            ${d.offer}
-          </p>
-
-        </div>
-      `).join("");
+  renderTrades();
 }
 
-function sellDuplicates(){
+function renderTrades(){
+  document.getElementById("trades").innerHTML=game.trades.map(t=>`
+    <div class="box">
+      <p>${t.text}</p>
+      <button class="secondary" onclick="toast('Negotiation opened. Full trade logic comes next.')">Negotiate</button>
+    </div>
+  `).join("");
+}
 
-  const groups={};
-
-  game.inventory.forEach(c=>{
-
-    if(c.locked)
-      return;
-
-    const key=
-      c.player+
-      c.variant+
-      c.rarity;
-
-    if(!groups[key])
-      groups[key]=[];
-
-    groups[key].push(c);
+function rerollMarket(){
+  market=market.map(m=>{
+    const change=rand(-14,16);
+    return {...m,change};
   });
-
-  let sell=[];
-
-  Object.values(groups)
-    .forEach(g=>{
-
-      if(g.length>1){
-
-        sell.push(
-          ...g.slice(1)
-        );
-      }
-    });
-
-  const ids=
-    new Set(
-      sell.map(c=>c.id)
-    );
-
-  const total=
-    sell.reduce(
-      (s,c)=>s+
-      Math.floor(c.value*.9),
-      0
-    );
-
-  game.inventory=
-    game.inventory.filter(
-      c=>!ids.has(c.id)
-    );
-
-  game.cash+=total;
-
-  render();
 }
 
-function bulkSell(filter){
-
-  const sell=
-    game.inventory.filter(c=>
-      !c.locked &&
-      filter(c)
-    );
-
-  const ids=
-    new Set(
-      sell.map(c=>c.id)
-    );
-
-  const total=
-    sell.reduce(
-      (s,c)=>s+
-      Math.floor(c.value*.9),
-      0
-    );
-
-  game.inventory=
-    game.inventory.filter(
-      c=>!ids.has(c.id)
-    );
-
-  game.cash+=total;
-
-  render();
+function applyMarket(){
+  game.inventory.forEach(c=>{
+    market.forEach(m=>{
+      if(m.target==="Gold" && c.variant.includes("Gold"))c.value=Math.max(1,Math.floor(c.value*(1+m.change/100)));
+      if(m.target==="Auto" && c.variant.includes("Auto"))c.value=Math.max(1,Math.floor(c.value*(1+m.change/100)));
+      if(m.target==="legend" && ["Tom Brady","Peyton Manning","Jerry Rice","Randy Moss"].includes(c.player))c.value=Math.max(1,Math.floor(c.value*(1+m.change/100)));
+      if(m.target==="rookie" && ["Caleb Williams","Jayden Daniels","Drake Maye","Bo Nix","Marvin Harrison Jr.","Malik Nabers"].includes(c.player))c.value=Math.max(1,Math.floor(c.value*(1+m.change/100)));
+    });
+  });
 }
 
 function sellAllCommons(){
-
-  bulkSell(c=>
-    rarityRank[c.rarity]===1
-  );
+  bulkSell(c=>c.rarity==="Common");
 }
 
-function sellAllCommonUncommon(){
-
-  bulkSell(c=>
-    rarityRank[c.rarity]<=2
-  );
+function sellAllUnder(v){
+  bulkSell(c=>!c.graded && c.value<v);
 }
 
-function sellAllRawUnder(v){
-
-  bulkSell(c=>
-    !c.graded &&
-    c.value<v
-  );
+function sellDuplicates(){
+  const seen={};
+  const sell=[];
+  game.inventory.forEach(c=>{
+    if(c.locked||c.listed||c.atGrading)return;
+    const key=c.player+c.variant+c.rarity;
+    if(seen[key])sell.push(c);
+    else seen[key]=true;
+  });
+  bulkSell(c=>sell.includes(c));
 }
 
-function renderSets(){
+function bulkSell(filter){
+  const sell=game.inventory.filter(c=>!c.locked&&!c.listed&&!c.atGrading&&filter(c));
+  const total=sell.reduce((s,c)=>s+Math.floor(c.value*.7),0);
+  const ids=new Set(sell.map(c=>c.id));
+  game.inventory=game.inventory.filter(c=>!ids.has(c.id));
+  game.cash+=total;
+  toast(`Sold ${sell.length} cards for ${money(total)}.`);
+  render();
+}
 
-  document
-    .getElementById("setList")
-    .innerHTML=
-      Object.entries(sets)
-        .map(([key,s])=>{
+function renderBuy(){
+  document.getElementById("buyGrid").innerHTML=Object.entries(products).map(([key,p])=>`
+    <div class="box">
+      <h3>${p.label}</h3>
+      <p class="muted">${p.desc}</p>
+      <p>${money(p.cost)}</p>
+      <button onclick="buyProduct('${key}')">Buy / Open</button>
+    </div>
+  `).join("");
+}
 
-          const owned=
-            new Set(
-              game.inventory
-                .filter(c=>
-                  c.setKey===key
-                )
-                .map(c=>c.player)
-            );
+function renderCards(){
+  document.getElementById("cards").innerHTML=
+    game.inventory.filter(c=>!c.listed&&!c.atGrading).map(cardHTML).join("")||"<p>No available cards.</p>";
+}
 
-          return`
-            <div class="set-card">
+function renderListings(){
+  document.getElementById("listings").innerHTML=
+    game.listings.map(l=>{
+      const c=game.inventory.find(x=>x.id==l.cardId);
+      return c?`
+        <div class="box">
+          <h3>${c.player}</h3>
+          <p>${c.variant} | ${c.rarity}</p>
+          <p>Asking: ${money(l.asking)}</p>
+          <p>Ends in ${l.days} day(s)</p>
+        </div>
+      `:"";
+    }).join("")||"<p>No active listings.</p>";
+}
 
-              <h3>
-                ${s.name}
-              </h3>
-
-              <p>
-                ${owned.size}/${s.needed}
-              </p>
-
-            </div>
-          `;
-        }).join("");
+function renderGrading(){
+  document.getElementById("grading").innerHTML=
+    game.grading.map(g=>{
+      const c=game.inventory.find(x=>x.id==g.cardId);
+      return c?`
+        <div class="box">
+          <h3>${c.player}</h3>
+          <p>${c.variant} | ${c.rarity}</p>
+          <p>Returns in ${g.days} day(s)</p>
+        </div>
+      `:"";
+    }).join("")||"<p>No cards at grading.</p>";
 }
 
 function renderMarket(){
+  document.getElementById("ticker").innerText=
+    market.map(m=>`${m.label}: ${m.change>=0?"▲":"▼"} ${Math.abs(m.change)}%`).join(" • ");
 
-  document
-    .getElementById("tickerText")
-    .innerText=
-      market.join(" • ");
-
-  document
-    .getElementById("marketGrid")
-    .innerHTML=
-      market.map(m=>`
-        <div class="market-card">
-          ${m}
-        </div>
-      `).join("");
+  document.getElementById("market").innerHTML=
+    market.map(m=>`
+      <div class="box">
+        <h3>${m.label}</h3>
+        <p class="${m.change>=0?"good":"bad"}">${m.change>=0?"▲":"▼"} ${Math.abs(m.change)}%</p>
+      </div>
+    `).join("");
 }
 
 function render(){
+  document.getElementById("cash").innerText=money(game.cash);
+  document.getElementById("inventoryValue").innerText=money(inventoryValue());
+  document.getElementById("rep").innerText=game.rep;
+  document.getElementById("day").innerText=game.day;
 
-  document
-    .getElementById("cash")
-    .innerText=
-      money(game.cash);
-
-  game.score=
-    game.inventory.reduce(
-      (s,c)=>
-        s+(rarityRank[c.rarity]*10),
-      0
-    );
-
-  document
-    .getElementById("score")
-    .innerText=
-      game.score;
-
-  document
-    .getElementById("followers")
-    .innerText=
-      game.followers
-        .toLocaleString();
-
-  document
-    .getElementById("day")
-    .innerText=
-      game.day;
-
-  document
-    .getElementById("packGrid")
-    .innerHTML=
-      Object.entries(packTypes)
-        .map(([key,p])=>`
-
-          <div class="pack">
-
-            <h3>
-              ${p.label}
-            </h3>
-
-            <p class="muted">
-              ${p.desc}
-            </p>
-
-            <p>
-              Owned:
-              ${game.packs[key]}
-            </p>
-
-            <button onclick="buyPack('${key}')">
-              Buy - ${money(p.cost)}
-            </button>
-
-            <button class="secondary"
-              onclick="openPack('${key}',false)">
-              Private Rip
-            </button>
-
-            <button class="secondary"
-              onclick="openPack('${key}',true)"
-              ${
-                game.liveCooldown>0
-                ? "disabled"
-                : ""
-              }>
-
-              ${
-                game.liveCooldown>0
-                ? "Cooldown"
-                : "Live Break"
-              }
-
-            </button>
-
-          </div>
-
-        `).join("");
-
-  document
-    .getElementById("inventory")
-    .innerHTML=
-      game.inventory
-        .filter(c=>!c.locked)
-        .map(cardHTML)
-        .join("");
-
-  document
-    .getElementById("pcInventory")
-    .innerHTML=
-      game.inventory
-        .filter(c=>c.locked)
-        .map(cardHTML)
-        .join("");
-
-  renderSets();
-
+  renderBuy();
+  renderCards();
+  renderListings();
+  renderTrades();
+  renderGrading();
   renderMarket();
+
+  localStorage.setItem("cardBusinessSave",JSON.stringify(game));
 }
 
-generateTrades();
+function load(){
+  const save=localStorage.getItem("cardBusinessSave");
+  if(save){
+    game=JSON.parse(save);
+    if(!game.trades)game.trades=[];
+  }
+}
 
+load();
+refreshTrades();
 render();
 </script>
 
